@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const conversionType = document.getElementById('conversionType');
     const convertAndCopyButton = document.getElementById('convertAndCopyButton');
     const outputText = document.getElementById('outputText');
+    const pasteButton = document.getElementById('pasteButton');
 
     // ヘルパー関数群
     const Utils = {
@@ -15,6 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return text.replace(/\n/g, '\r\n');
         }
     };
+
+    // 貼り付けボタンのイベントリスナー
+    pasteButton.addEventListener('click', async () => {
+        try {
+            const clipboardText = await navigator.clipboard.readText();
+            inputText.value = clipboardText;
+            alert('クリップボードからテキストを貼り付けました！');
+        } catch (err) {
+            console.error('クリップボードからの読み取りに失敗しました:', err);
+            alert('クリップボードからの貼り付けに失敗しました。ブラウザのセキュリティ設定を確認するか、手動で貼り付けてください。');
+        }
+    });
 
     convertAndCopyButton.addEventListener('click', async () => {
         const textToConvert = Utils.normalizeNewlines(inputText.value); // まず改行をLFに正規化

@@ -40,7 +40,7 @@ def export_as_markdown(root_dir, output_dir):
                 # 読み込んだ内容の末尾の空白文字を削除
                 out_file.write(f.read().rstrip()) 
 
-            out_file.write("\n```\n\n")
+            out_file.write("\n```\n")
 
     print(f"Markdown export completed: {output_path}")
 

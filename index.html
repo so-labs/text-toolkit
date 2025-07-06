@@ -12,18 +12,19 @@
 
         <label for="inputText">変換したいテキスト:</label>
         <textarea id="inputText" rows="10" placeholder="ここにテキストを入力してください"></textarea>
+        <button id="pasteButton">クリップボードから貼り付け</button> 
 
         <label for="conversionType">変換の種類を選択:</label>
         <select id="conversionType">
-            <option value="adjustKagikakko">括弧のネストを自動調整（「」と『』）</option>
-            <option value="trimWhitespace">行頭の空白を削除</option>
             <option value="stripTrailingWhitespace">行末の空白を削除</option>
+            <option value="trimWhitespace">行頭の空白を削除</option>
+            <option value="geminiNewlineFix">Gemini改行修正</option>
+            <option value="adjustKagikakko">括弧のネストを自動調整（「」と『』）</option>
             <option value="spaceToFullwidth">半角スペースを全角に統一</option>
             <option value="spaceToHalfwidth">全角スペースを半角に統一</option>
             <option value="markdownQuote">Markdown引用（> ）</option>
             <option value="markdownBulletList">Markdown箇条書き（* ）</option>
             <option value="markdownNumberedList">Markdown番号付きリスト</option>
-            <option value="geminiNewlineFix">Gemini改行修正</option>
             <option value="codeBlockAhk">コードブロック (AutoHotkey)</option>
             <option value="codeBlockPython">コードブロック (Python)</option>
             <option value="codeBlockJs">コードブロック (JavaScript)</option>
