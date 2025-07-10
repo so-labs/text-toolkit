@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const convertAndCopyButton = document.getElementById('convertAndCopyButton');
     const outputText = document.getElementById('outputText');
     const pasteButton = document.getElementById('pasteButton');
+    const pasteAndConvertButton = document.getElementById('pasteAndConvertButton');
 
     // ヘルパー関数群
     const Utils = {
@@ -17,20 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 貼り付けボタンのイベントリスナー
-    pasteButton.addEventListener('click', async () => {
-        try {
-            const clipboardText = await navigator.clipboard.readText();
-            inputText.value = clipboardText;
-            alert('クリップボードからテキストを貼り付けました！');
-        } catch (err) {
-            console.error('クリップボードからの読み取りに失敗しました:', err);
-            alert('クリップボードからの貼り付けに失敗しました。ブラウザのセキュリティ設定を確認するか、手動で貼り付けてください。');
-        }
-    });
-
-    convertAndCopyButton.addEventListener('click', async () => {
-        const textToConvert = Utils.normalizeNewlines(inputText.value); // まず改行をLFに正規化
+    // 変換ロジックをまとめた関数
+    const performConversion = (textToConvert) => {
         const selectedType = conversionType.value;
         let convertedText = '';
 
@@ -98,12 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
             default:
                 convertedText = textToConvert;
         }
+        return convertedText;
+    };
 
-        outputText.value = convertedText;
-
+    // クリップボードへのコピーと結果表示をまとめた関数
+    const copyToClipboardAndShowResult = async (text) => {
+        outputText.value = text; // まず出力エリアに結果を表示
         try {
-            await navigator.clipboard.writeText(convertedText);
-            alert('変換結果をクリップボードにコピーしました！');
+            await navigator.clipboard.writeText(text);
+            alert('変換結果をクリップボードにコピーしました！'); // 成功メッセージを一本化
         } catch (err) {
             console.error('クリップボードへのコピーに失敗しました:', err);
             try {
@@ -115,5 +107,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('旧式コピーも失敗:', fallbackErr);
             }
         }
+    };
+
+
+    // 貼り付けボタンのイベントリスナー
+    pasteButton.addEventListener('click', async () => {
+        try {
+            const clipboardText = await navigator.clipboard.readText();
+            inputText.value = clipboardText;
+            alert('クリップボードからテキストを貼り付けました！');
+        } catch (err) {
+            console.error('クリップボードからの読み取りに失敗しました:', err);
+            alert('クリップボードからの貼り付けに失敗しました。ブラウザのセキュリティ設定を確認するか、手動で貼り付けてください。');
+        }
+    });
+
+    // 貼り付けて変換ボタンのイベントリスナー
+    pasteAndConvertButton.addEventListener('click', async () => {
+        try {
+            const clipboardText = await navigator.clipboard.readText();
+            inputText.value = clipboardText; // まず入力欄に貼り付け
+
+            // 貼り付けたテキストを正規化し、変換ロジックを呼び出す
+            const textToConvert = Utils.normalizeNewlines(inputText.value);
+            const convertedText = performConversion(textToConvert);
+
+            await copyToClipboardAndShowResult(convertedText); // 変換結果を出力し、コピーする
+        } catch (err) {
+            console.error('貼り付けと変換に失敗しました:', err);
+            alert('貼り付けと変換に失敗しました。ブラウザのセキュリティ設定を確認してください。');
+        }
+    });
+
+    // 変換してコピーボタンのイベントリスナー
+    convertAndCopyButton.addEventListener('click', async () => {
+        const textToConvert = Utils.normalizeNewlines(inputText.value);
+        const convertedText = performConversion(textToConvert);
+
+        await copyToClipboardAndShowResult(convertedText); // 変換結果を出力し、コピーする
     });
 });

@@ -34,10 +34,23 @@ label {
     color: #555;
 }
 
+/* ボタンを横並びにするための新しいラッパー */
+.button-group {
+    display: flex;
+    gap: 10px; /* ボタン間のスペース */
+    margin-bottom: 15px; /* 下のマージンは既存のボタンに合わせて調整 */
+}
+
+.button-group button {
+    flex: 1; /* グループ内のボタンが均等な幅になるように */
+    margin-bottom: 0; /* button要素に個別に設定されていたmargin-bottomをリセット */
+}
+
+
 textarea, select, button {
     width: 100%;
     padding: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 15px; /* button-group内のボタンはCSSで調整するため、一般的なボタンのマージン設定に戻す */
     border: 1px solid #cce0ff; /* 明るい青のボーダー */
     border-radius: 6px;
     font-size: 1em;
@@ -87,5 +100,9 @@ button:active {
     textarea, select, button {
         padding: 10px;
         font-size: 0.9em;
+    }
+    .button-group {
+        flex-direction: column; /* スマホでは縦並びにする */
+        gap: 5px; /* 縦並びになった時の間隔を調整 */
     }
 }
