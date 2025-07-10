@@ -34,23 +34,22 @@ label {
     color: #555;
 }
 
-/* ボタンを横並びにするための新しいラッパー */
+/* デフォルト（デスクトップ・タブレット横向き）は横並び */
 .button-group {
     display: flex;
     gap: 10px; /* ボタン間のスペース */
-    margin-bottom: 15px; /* 下のマージンは既存のボタンに合わせて調整 */
+    margin-bottom: 15px;
 }
 
 .button-group button {
     flex: 1; /* グループ内のボタンが均等な幅になるように */
-    margin-bottom: 0; /* button要素に個別に設定されていたmargin-bottomをリセット */
+    margin-bottom: 0;
 }
-
 
 textarea, select, button {
     width: 100%;
     padding: 12px;
-    margin-bottom: 15px; /* button-group内のボタンはCSSで調整するため、一般的なボタンのマージン設定に戻す */
+    margin-bottom: 15px;
     border: 1px solid #cce0ff; /* 明るい青のボーダー */
     border-radius: 6px;
     font-size: 1em;
@@ -84,8 +83,30 @@ button:active {
     color: #333;
 }
 
-/* スマホ表示の調整 */
-@media (max-width: 768px) {
+/* ここからメディアクエリの調整 */
+
+/* タブレット（768px以上、1023px以下）のスタイル - 横並びを維持 */
+@media (min-width: 768px) and (max-width: 1023px) {
+    body {
+        margin: 20px; /* デスクトップと同じでも良いですし、調整してもOK */
+    }
+    .container {
+        padding: 25px; /* 少し小さく調整 */
+        border-radius: 10px;
+    }
+    h1 {
+        font-size: 1.6em;
+    }
+    textarea, select, button {
+        padding: 11px;
+        font-size: 0.95em;
+    }
+    /* button-groupはデフォルトの横並びを継承するので、特に変更は不要 */
+}
+
+
+/* スマートフォン（最大767px）のスタイル - 縦並びにする */
+@media (max-width: 767px) {
     body {
         margin: 15px;
     }
