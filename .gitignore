@@ -1,2 +1,2 @@
-# Markdown出力用のファイルを除外
-__export__/
+# Markdownエクスポートファイル
+export_*.md
