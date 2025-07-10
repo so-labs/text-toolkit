@@ -85,8 +85,8 @@ button:active {
 
 /* ここからメディアクエリの調整 */
 
-/* タブレット（768px以上、1023px以下）のスタイル - 横並びを維持 */
-@media (min-width: 768px) and (max-width: 1023px) {
+/* タブレット（600px以上、1023px以下）のスタイル - 横並びを維持 */
+@media (min-width: 600px) and (max-width: 1023px) {
     body {
         margin: 20px; /* デスクトップと同じでも良いですし、調整してもOK */
     }
@@ -105,8 +105,8 @@ button:active {
 }
 
 
-/* スマートフォン（最大767px）のスタイル - 縦並びにする */
-@media (max-width: 767px) {
+/* スマートフォン（最大599px）のスタイル - 縦並びにする */
+@media (max-width: 599px) {
     body {
         margin: 15px;
     }
