@@ -62,9 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'geminiNewlineFix':
                 // 1. 3つ連続する改行を2つに減らす
-                let tempText = textToConvert.replace(/\n\n\n/g, '\n\n');
+                var tempText = textToConvert.replace(/\n\n\n/g, '\n\n');
                 // 2. その結果に対して、2つ連続する改行を1つに減らす
                 convertedText = tempText.replace(/\n\n/g, '\n');
+                // 3. NBSP(ノーブレークスペース)を半角スペースに変換する
+                convertedText = convertedText.replace(/\u00A0/g, ' ');
                 break;
             case 'codeBlockAhk':
                 convertedText = `\`\`\`AutoHotKey\n${textToConvert}\n\`\`\``;
@@ -83,6 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'newlinesToSpace':
                 convertedText = textToConvert.replace(/\n/g, ' ');
+                break;
+            case 'quoteAndHalfwidthSpace':
+                // 1. 全角スペースを半角スペースに統一
+                var tempText = textToConvert.replace(/　/g, ' ');
+                // 2. 各行に引用符を付加
+                convertedText = tempText.replace(/^/gm, '> ');
                 break;
             default:
                 convertedText = textToConvert;
