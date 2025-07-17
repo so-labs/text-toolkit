@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         normalizeNewlines: (text) => {
             return text.replace(/\r\n|\r/g, '\n');
         },
-        // 改行コードをCRLFに変換 (今回は使わないが残しておく)
+        // 改行コードをCRLFに変換
         toCRLF: (text) => {
             return text.replace(/\n/g, '\r\n');
         }
@@ -51,10 +51,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 convertedText = textToConvert.replace(/　/g, ' ');
                 break;
             case 'markdownQuote':
-                convertedText = textToConvert.replace(/^/gm, '> ');
+                // 空行には ">" のみ、それ以外には "> " を付加
+                var linesForQuote = textToConvert.split('\n');
+                var quotedText = '';
+
+                // 各行に対して処理を行う
+                linesForQuote.forEach((line, index) => {
+                    if (index > 0) { // 最初の行以外は改行を追加
+                        quotedText += '\n';
+                    }
+                    if (line.trim() === '') {
+                        quotedText += '>'; // 空行（空白のみの行も含む）の場合
+                    } else {
+                        quotedText += '> ' + line; // それ以外の行の場合
+                    }
+                });
+                convertedText = quotedText;
                 break;
-            case 'markdownBulletList':
-                convertedText = textToConvert.replace(/^/gm, '* ');
+            case 'markdownNumberedList':
+                // 空行をスキップして連番を振る
+                var numberedLines = textToConvert.split('\n');
+                var counter = 1;
+                var processedNumberedLines = [];
+
+                numberedLines.forEach(line => {
+                    // 行頭・行末の空白をトリムし、その結果が空でない場合のみ処理
+                    if (line.trim().length > 0) {
+                        processedNumberedLines.push(`${counter}. ${line}`);
+                        counter++;
+                    }
+                    // 空行（空白のみの行も含む）の場合は何もせずスキップする
+                });
+                convertedText = processedNumberedLines.join('\n');
                 break;
             case 'markdownNumberedList':
                 const lines = textToConvert.split('\n');
