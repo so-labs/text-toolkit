@@ -117,8 +117,22 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'quoteAndHalfwidthSpace':
                 // 1. 全角スペースを半角スペースに統一
                 var tempText = textToConvert.replace(/　/g, ' ');
-                // 2. 各行に引用符を付加
-                convertedText = tempText.replace(/^/gm, '> ');
+
+                // 2. AHK版のMarkdown引用のロジックに合わせる：空行には ">" のみ、それ以外には "> " を付加
+                var linesForQuoteAndSpace = tempText.split('\n');
+                var quotedAndSpacedText = '';
+
+                linesForQuoteAndSpace.forEach((line, index) => {
+                    if (index > 0) { // 最初の行以外は改行を追加
+                        quotedAndSpacedText += '\n';
+                    }
+                    if (line.trim() === '') {
+                        quotedAndSpacedText += '>'; // 空行（空白のみの行も含む）の場合
+                    } else {
+                        quotedAndSpacedText += '> ' + line; // それ以外の行の場合
+                    }
+                });
+                convertedText = quotedAndSpacedText;
                 break;
             default:
                 convertedText = textToConvert;
