@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 1. 全角スペースを半角スペースに統一
                 var tempText = textToConvert.replace(/　/g, ' ');
 
-                // 2. AHK版のMarkdown引用のロジックに合わせる：空行には ">" のみ、それ以外には "> " を付加
+                // 2. 空行には ">" のみ、それ以外には "> " を付加
                 var linesForQuoteAndSpace = tempText.split('\n');
                 var quotedAndSpacedText = '';
 
