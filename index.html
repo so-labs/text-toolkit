@@ -14,8 +14,8 @@
         <label for="inputText">変換したいテキスト:</label>
         <textarea id="inputText" rows="10" placeholder="ここにテキストを入力してください"></textarea>
         <div class="button-group">
-            <button id="pasteButton">クリップボードから貼り付け</button>
-            <button id="pasteAndConvertButton">貼り付けて変換</button>
+            <button id="pasteButton">[A]クリップボードから貼り付け</button>
+            <button id="pasteAndConvertButton">[A]+[B]まとめて実行</button>
         </div>
 
         <label for="conversionType">変換の種類を選択:</label>
@@ -30,6 +30,8 @@
             <option value="markdownQuote">Markdown引用（> ）</option>
             <option value="markdownBulletList">Markdown箇条書き（* ）</option>
             <option value="markdownNumberedList">Markdown番号付きリスト</option>
+            <option value="codeBlockMarkdown">コードブロック (Markdown)</option>
+            <option value="codeBlockMarkdownFourBackticks">コードブロック (Markdown/バッククォート4)</option>
             <option value="codeBlockAhk">コードブロック (AutoHotkey)</option>
             <option value="codeBlockPython">コードブロック (Python)</option>
             <option value="codeBlockJs">コードブロック (JavaScript)</option>
@@ -38,7 +40,7 @@
             <option value="newlinesToSpace">改行をスペースに変換</option>
         </select>
 
-        <button id="convertAndCopyButton">変換してコピー</button>
+        <button id="convertAndCopyButton">[B]変換してコピー</button>
 
         <label for="outputText">変換結果 (自動コピーされます):</label>
         <textarea id="outputText" rows="10" readonly></textarea>

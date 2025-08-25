@@ -96,6 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 3. NBSP(ノーブレークスペース)を半角スペースに変換する
                 convertedText = convertedText.replace(/\u00A0/g, ' ');
                 break;
+            case 'codeBlockMarkdown':
+                convertedText = `\`\`\`Markdown\n${textToConvert}\n\`\`\``;
+                break;
+            case 'codeBlockMarkdownFourBackticks':
+                convertedText = `\`\`\`\`Markdown\n${textToConvert}\n\`\`\`\``;
+                break;
             case 'codeBlockAhk':
                 convertedText = `\`\`\`AutoHotKey\n${textToConvert}\n\`\`\``;
                 break;
