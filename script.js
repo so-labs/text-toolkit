@@ -23,6 +23,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedType = conversionType.value;
         let convertedText = '';
 
+        // コードブロック処理用の共通ロジック
+        // 指定された言語と入力テキストから、適切なバッククォート数で囲んだ文字列を生成する
+        const createCodeBlock = (lang, text) => {
+            // 入力テキスト内のバッククォートの連続を検索
+            const matches = text.match(/`+/g) || [];
+            // 最も長いバッククォートの列の長さを取得（なければ0）
+            const maxTicks = matches.length > 0 ? Math.max(...matches.map(m => m.length)) : 0;
+            // 囲うバッククォートの数は (最大数 + 1) か 3 の大きい方
+            const tickCount = Math.max(3, maxTicks + 1);
+            const fence = "`".repeat(tickCount);
+            
+            return `${fence}${lang}\n${text}\n${fence}`;
+        };
+
         switch (selectedType) {
             case 'adjustKagikakko':
                 let nestingLevel = 0;
@@ -84,10 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 convertedText = processedNumberedLines.join('\n');
                 break;
-            case 'markdownNumberedList':
-                const lines = textToConvert.split('\n');
-                convertedText = lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
-                break;
             case 'geminiNewlineFix':
                 // 1. 3つ連続する改行を2つに減らす
                 var tempText = textToConvert.replace(/\n\n\n/g, '\n\n');
@@ -96,24 +106,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 3. NBSP(ノーブレークスペース)を半角スペースに変換する
                 convertedText = convertedText.replace(/\u00A0/g, ' ');
                 break;
+            
+            /* --- コードブロック自動判定ロジック適用 --- */
             case 'codeBlockMarkdown':
-                convertedText = `\`\`\`Markdown\n${textToConvert}\n\`\`\``;
-                break;
-            case 'codeBlockMarkdownFourBackticks':
-                convertedText = `\`\`\`\`Markdown\n${textToConvert}\n\`\`\`\``;
+                convertedText = createCodeBlock('Markdown', textToConvert);
                 break;
             case 'codeBlockAhk':
-                convertedText = `\`\`\`AutoHotKey\n${textToConvert}\n\`\`\``;
+                convertedText = createCodeBlock('AutoHotKey', textToConvert);
                 break;
             case 'codeBlockPython':
-                convertedText = `\`\`\`Python\n${textToConvert}\n\`\`\``;
+                convertedText = createCodeBlock('Python', textToConvert);
                 break;
             case 'codeBlockJs':
-                convertedText = `\`\`\`JavaScript\n${textToConvert}\n\`\`\``;
+                convertedText = createCodeBlock('JavaScript', textToConvert);
                 break;
             case 'codeBlockGeneric':
-                convertedText = `\`\`\`\n${textToConvert}\n\`\`\``;
+                convertedText = createCodeBlock('', textToConvert);
                 break;
+            /* -------------------------------------- */
+
             case 'newlinesToSlash':
                 convertedText = textToConvert.replace(/\n/g, ' / ');
                 break;
