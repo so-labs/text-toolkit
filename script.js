@@ -109,16 +109,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             /* --- コードブロック自動判定ロジック適用 --- */
             case 'codeBlockMarkdown':
-                convertedText = createCodeBlock('Markdown', textToConvert);
+                convertedText = createCodeBlock('markdown', textToConvert);
                 break;
             case 'codeBlockAhk':
-                convertedText = createCodeBlock('AutoHotKey', textToConvert);
+                convertedText = createCodeBlock('autohotkey', textToConvert);
                 break;
             case 'codeBlockPython':
-                convertedText = createCodeBlock('Python', textToConvert);
+                convertedText = createCodeBlock('python', textToConvert);
                 break;
             case 'codeBlockJs':
-                convertedText = createCodeBlock('JavaScript', textToConvert);
+                convertedText = createCodeBlock('javascript', textToConvert);
                 break;
             case 'codeBlockGeneric':
                 convertedText = createCodeBlock('', textToConvert);
