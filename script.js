@@ -151,6 +151,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 convertedText = quotedAndSpacedText;
                 break;
+            case 'markdownGeminiFix':
+                convertedText = textToConvert
+                    // 1. NBSPを半角スペースに
+                    .replace(/\u00A0/g, ' ')
+
+                    // 2. 水平線の削除
+                    .replace(/^\s*---\s*$/gm, '')
+
+                    // 3. 強調内の全角括弧を分割する (例: **A（B）** -> **A**（**B**）)
+                    // 強調の開始と終了の間に全角括弧がある場合、一旦強調を閉じて括弧を開き直す
+                    .replace(/\*\*([^*]+)([「『（])(.*?)([」』）])\*\*/g, '**$1**$2**$3**$4')
+
+                    // 4. 括弧の外側の強調を内側に移動 (例: **「A」** -> 「**A**」)
+                    .replace(/\*\*([「『（])(.*?)([」』）])\*\*/g, '$1**$2**$3')
+
+                    // --- 以下、リストや見出し、テーブルの修正 ---
+                    .replace(/^(\s*)\* /gm, '$1- ')
+                    .replace(/[ ]+\|/g, '|')
+                    .replace(/\|[ ]+/g, '|')
+                    .replace(/([^\n])\n(#+ )/g, '$1\n\n$2')
+                    .replace(/^(#+ .+)$(?!\n\n)/gm, '$1\n')
+                    .replace(/([^\n#\-])\n(- )/g, '$1\n\n$2')
+                    .replace(/(\s*- .*)\n\n+(\s*- )/g, '$1\n$2')
+                    .replace(/^([ ]+)- /gm, (match, spaces) => {
+                        return '  '.repeat(Math.ceil(spaces.length / 4)) + '- ';
+                    })
+                    .replace(/\n{3,}/g, '\n\n')
+                    .trim();
+                break;
             default:
                 convertedText = textToConvert;
         }
