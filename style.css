@@ -1,67 +1,122 @@
+:root {
+    --bg-color: #f0f2f5;
+    --container-bg: #ffffff;
+    --text-color: #333;
+    --heading-color: #0056b3;
+    --label-color: #555;
+    --border-color: #cce0ff;
+    --button-bg: #007bff;
+    --button-hover: #0056b3;
+    --output-bg: #e9f0f9;
+    --font-family: 'Zen Kaku Gothic New', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body.dark-mode {
+    --bg-color: #1a1a1b;
+    --container-bg: #2d2d2e;
+    --text-color: #e1e1e1;
+    --heading-color: #ff9f4d;
+    /* 暖かみのあるオレンジ */
+    --label-color: #b0b0b0;
+    --border-color: #444;
+    --button-bg: #e67e00;
+    /* オレンジ */
+    --button-hover: #cc7000;
+    --output-bg: #38383a;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--font-family);
     margin: 20px;
-    background-color: #f0f2f5; /* 少し柔らかい背景色 */
-    color: #333;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* 上部に寄せる */
-    min-height: 100vh; /* 画面いっぱいの高さ */
+    align-items: flex-start;
+    min-height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .container {
-    background-color: #ffffff;
+    background-color: var(--container-bg);
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 600px;
     box-sizing: border-box;
+    transition: background-color 0.3s;
 }
 
 h1 {
     text-align: center;
-    color: #0056b3;
+    color: var(--heading-color);
     margin-bottom: 30px;
     font-size: 1.8em;
 }
 
 label {
-    display: block; /* 各ラベルを新しい行に配置 */
+    display: block;
     margin-top: 15px;
     margin-bottom: 8px;
     font-weight: bold;
-    color: #555;
+    color: var(--label-color);
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    background-color: var(--container-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
 }
 
 /* デフォルト（デスクトップ・タブレット横向き）は横並び */
 .button-group {
     display: flex;
-    gap: 10px; /* ボタン間のスペース */
+    gap: 10px;
+    /* ボタン間のスペース */
     margin-bottom: 15px;
 }
 
 .button-group button {
-    flex: 1; /* グループ内のボタンが均等な幅になるように */
+    flex: 1;
+    /* グループ内のボタンが均等な幅になるように */
     margin-bottom: 0;
 }
 
-textarea, select, button {
+textarea,
+select,
+button {
     width: 100%;
     padding: 12px;
     margin-bottom: 15px;
-    border: 1px solid #cce0ff; /* 明るい青のボーダー */
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 1em;
-    box-sizing: border-box; /* paddingとborderをwidthに含める */
+    box-sizing: border-box;
+    font-family: inherit;
+    background-color: var(--container-bg);
+    color: var(--text-color);
 }
 
 textarea {
-    resize: vertical; /* 垂直方向にのみリサイズ可能にする */
+    resize: vertical;
 }
 
 button {
-    background-color: #007bff; /* 青色のボタン */
+    background-color: var(--button-bg);
     color: white;
     cursor: pointer;
     border: none;
@@ -70,17 +125,17 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3; /* ホバーで少し濃い青 */
-    transform: translateY(-2px); /* 少し上に浮き上がるアニメーション */
+    background-color: var(--button-hover);
+    transform: translateY(-2px);
 }
 
 button:active {
-    transform: translateY(0); /* クリック時に戻る */
+    transform: translateY(0);
 }
 
 #outputText {
-    background-color: #e9f0f9; /* 出力エリアの背景色を少し変える */
-    color: #333;
+    background-color: var(--output-bg);
+    color: var(--text-color);
 }
 
 /* ここからメディアクエリの調整 */
@@ -88,19 +143,27 @@ button:active {
 /* タブレット（600px以上、1023px以下）のスタイル - 横並びを維持 */
 @media (min-width: 600px) and (max-width: 1023px) {
     body {
-        margin: 20px; /* デスクトップと同じでも良いですし、調整してもOK */
+        margin: 20px;
+        /* デスクトップと同じでも良いですし、調整してもOK */
     }
+
     .container {
-        padding: 25px; /* 少し小さく調整 */
+        padding: 25px;
+        /* 少し小さく調整 */
         border-radius: 10px;
     }
+
     h1 {
         font-size: 1.6em;
     }
-    textarea, select, button {
+
+    textarea,
+    select,
+    button {
         padding: 11px;
         font-size: 0.95em;
     }
+
     /* button-groupはデフォルトの横並びを継承するので、特に変更は不要 */
 }
 
@@ -110,20 +173,28 @@ button:active {
     body {
         margin: 15px;
     }
+
     .container {
         padding: 20px;
         border-radius: 8px;
     }
+
     h1 {
         font-size: 1.5em;
         margin-bottom: 20px;
     }
-    textarea, select, button {
+
+    textarea,
+    select,
+    button {
         padding: 10px;
         font-size: 0.9em;
     }
+
     .button-group {
-        flex-direction: column; /* スマホでは縦並びにする */
-        gap: 5px; /* 縦並びになった時の間隔を調整 */
+        flex-direction: column;
+        /* スマホでは縦並びにする */
+        gap: 5px;
+        /* 縦並びになった時の間隔を調整 */
     }
 }
