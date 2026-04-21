@@ -51,8 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // コードブロック処理用の共通ロジック
         // 指定された言語と入力テキストから、適切なバッククォート数で囲んだ文字列を生成する
         const createCodeBlock = (lang, text) => {
-            // 入力テキスト内のバッククォートの連続を検索
-            const matches = text.match(/`+/g) || [];
+            // 行頭にあるバッククォートの連続を検索（無関係なインラインバッククォートを除外）
+            const matches = text.match(/^`+/gm) || [];
             // 最も長いバッククォートの列の長さを取得（なければ0）
             const maxTicks = matches.length > 0 ? Math.max(...matches.map(m => m.length)) : 0;
             // 囲うバッククォートの数は (最大数 + 1) か 3 の大きい方
