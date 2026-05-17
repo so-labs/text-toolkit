@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pasteButton = document.getElementById('pasteButton');
     const pasteAndConvertButton = document.getElementById('pasteAndConvertButton');
     const themeToggle = document.getElementById('themeToggle');
+    const privacyNote = document.getElementById('privacyNote');
 
     // ダークモード関連の処理
     const applyTheme = (theme) => {
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // 変換ロジックをまとめた関数
-    const performConversion = (textToConvert) => {
+    const performConversion = async (textToConvert) => {
         const selectedType = conversionType.value;
         let convertedText = '';
 
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 囲うバッククォートの数は (最大数 + 1) か 3 の大きい方
             const tickCount = Math.max(3, maxTicks + 1);
             const fence = "`".repeat(tickCount);
-            
+
             return `${fence}${lang}\n${text}\n${fence}`;
         };
 
@@ -131,8 +132,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 3. NBSP(ノーブレークスペース)を半角スペースに変換する
                 convertedText = convertedText.replace(/\u00A0/g, ' ');
                 break;
-            
+
             /* --- コードブロック自動判定ロジック適用 --- */
+            case 'codeBlockAuto': {
+                const detectedLang = await AIDetector.detect(textToConvert);
+                convertedText = createCodeBlock(detectedLang, textToConvert);
+                break;
+            }
             case 'codeBlockMarkdown':
                 convertedText = createCodeBlock('markdown', textToConvert);
                 break;
@@ -211,6 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return convertedText;
     };
 
+    const setButtonsBusy = (busy) => {
+        convertAndCopyButton.disabled = busy;
+        pasteAndConvertButton.disabled = busy;
+    };
+
     // クリップボードへのコピーと結果表示をまとめた関数
     const copyToClipboardAndShowResult = async (text) => {
         outputText.value = text; // まず出力エリアに結果を表示
@@ -243,28 +254,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const runConversion = async () => {
+        if (!conversionType.value) {
+            alert('変換機能を選択してください。');
+            return;
+        }
+        const textToConvert = Utils.normalizeNewlines(inputText.value);
+        const needsDetection = conversionType.value === 'codeBlockAuto';
+
+        setButtonsBusy(true);
+        if (needsDetection) {
+            outputText.value = 'AIが言語を判定中...';
+        }
+
+        try {
+            if (needsDetection) {
+                const authSuccess = await AIDetector.ensureAuth();
+                if (!authSuccess) {
+                    console.log('Puter認証がスキップされたか、またはローカル環境中のため、AI判定なしで汎用コードブロックを出力します。');
+                }
+            }
+            const convertedText = await performConversion(textToConvert);
+            await copyToClipboardAndShowResult(convertedText);
+        } catch (err) {
+            console.error('変換またはコピーに失敗しました:', err);
+            // 失敗時は「判定中...」を消去し、エラー表記とともに元のテキストを書き戻す
+            outputText.value = '【エラー】変換またはコピーに失敗しました。\n\n' + textToConvert;
+            // クリックリスナー側でエラーダイアログをトリガーさせるために再スロー
+            throw err;
+        } finally {
+            setButtonsBusy(false);
+        }
+    };
+
     // 貼り付けて変換ボタンのイベントリスナー
     pasteAndConvertButton.addEventListener('click', async () => {
         try {
             const clipboardText = await navigator.clipboard.readText();
-            inputText.value = clipboardText; // まず入力欄に貼り付け
-
-            // 貼り付けたテキストを正規化し、変換ロジックを呼び出す
-            const textToConvert = Utils.normalizeNewlines(inputText.value);
-            const convertedText = performConversion(textToConvert);
-
-            await copyToClipboardAndShowResult(convertedText); // 変換結果を出力し、コピーする
+            inputText.value = clipboardText;
+            await runConversion();
         } catch (err) {
             console.error('貼り付けと変換に失敗しました:', err);
             alert('貼り付けと変換に失敗しました。ブラウザのセキュリティ設定を確認してください。');
+            setButtonsBusy(false);
         }
     });
 
     // 変換してコピーボタンのイベントリスナー
     convertAndCopyButton.addEventListener('click', async () => {
-        const textToConvert = Utils.normalizeNewlines(inputText.value);
-        const convertedText = performConversion(textToConvert);
-
-        await copyToClipboardAndShowResult(convertedText); // 変換結果を出力し、コピーする
+        try {
+            await runConversion();
+        } catch (err) {
+            console.error('変換に失敗しました:', err);
+            alert('変換に失敗しました。');
+            setButtonsBusy(false);
+        }
     });
+
+    // プライバシーポリシーの表示/非表示を動的に制御する関数
+    const updatePrivacyNoteVisibility = () => {
+        if (conversionType.value === 'codeBlockAuto') {
+            privacyNote.style.display = 'flex';
+        } else {
+            privacyNote.style.display = 'none';
+        }
+    };
+
+    conversionType.addEventListener('change', updatePrivacyNoteVisibility);
+    
+    // 初期表示状態を設定
+    updatePrivacyNoteVisibility();
 });

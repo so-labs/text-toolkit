@@ -6,11 +6,12 @@ import datetime
 # MAIN_SCRIPT_NAME = "" # 今回は使用しない
 # -----------------------------
 
-# HTML/JavaScript/CSSファイルのみを対象
+# 対象のファイルの種類を指定
 EXTENSION_TO_LANG = {
-    '.html': 'HTML',
-    '.js': 'JavaScript',
-    '.css': 'CSS',
+    '.html': 'html',
+    '.js': 'javascript',
+    '.css': 'css',
+    '.bat': 'batch',
 }
 
 TARGET_EXTENSIONS = list(EXTENSION_TO_LANG.keys())
@@ -21,7 +22,7 @@ def collect_files(root_dir):
     パスでソートされたパスのジェネレータを返します。
     """
     all_target_files = []
-    
+
     # 全ての対象ファイルを収集
     for dirpath, _, filenames in os.walk(root_dir):
         for file in filenames:
@@ -39,14 +40,14 @@ def generate_file_tree_map(root_dir, collected_files):
     """
     tree_map = []
     tree_map.append("```tree") # treeコマンド風の表示を想定
-    
+
     # ディレクトリ構造を保持するためのネストされた辞書
     tree_structure = {}
 
     for filepath in collected_files:
         relative_path = os.path.relpath(filepath, root_dir)
         parts = relative_path.split(os.sep)
-        
+
         current_level = tree_structure
         for i, part in enumerate(parts):
             if i == len(parts) - 1: # ファイル名の場合
@@ -57,17 +58,17 @@ def generate_file_tree_map(root_dir, collected_files):
                 if part not in current_level:
                     current_level[part] = {}
                 current_level = current_level[part]
-    
+
     def walk_tree(node, prefix=""):
         # ディレクトリとファイルを区別して取得
         dirs = sorted([k for k in node.keys() if k != "__files__"])
         files = sorted(node.get("__files__", []))
-        
+
         all_items = files + dirs # ファイルを先に、次にディレクトリを処理する順
 
         for i, item in enumerate(all_items):
             is_last_item = (i == len(all_items) - 1)
-            
+
             indent_prefix = ""
             if is_last_item:
                 tree_map.append(f"{prefix}└── {item}")
@@ -82,7 +83,7 @@ def generate_file_tree_map(root_dir, collected_files):
     walk_tree(tree_structure)
     tree_map.append("```")
     tree_map.append("\n") # 最後に空行を1つ追加
-    
+
     return "\n".join(tree_map)
 
 
@@ -92,7 +93,7 @@ def export_as_markdown(root_dir):
     生成されたMarkdownファイルはルートディレクトリに保存されます。
     """
     project_name = os.path.basename(os.path.abspath(root_dir))
-    
+
     # ファイル名: [export_ディレクトリ名_YYYY-MM-DD.md]
     timestamp_date = datetime.datetime.now().strftime("%Y-%m-%d")
     output_filename = f"export_{project_name}_{timestamp_date}.md"

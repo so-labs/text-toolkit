@@ -19,39 +19,65 @@
 
         <label for="inputText">変換したいテキスト:</label>
         <textarea id="inputText" rows="10" placeholder="ここにテキストを入力してください"></textarea>
-        <div class="button-group">
-            <button id="pasteButton">[A]クリップボードから貼り付け</button>
-            <button id="pasteAndConvertButton">[A]+[B]まとめて実行</button>
-        </div>
 
         <label for="conversionType">変換の種類を選択:</label>
         <select id="conversionType">
-            <option value="stripTrailingWhitespace">行末の空白を削除</option>
-            <option value="trimWhitespace">行頭の空白を削除</option>
-            <option value="markdownGeminiFix">Markdown修正 (Gemini用)</option>
-            <option value="geminiNewlineFix">Gemini改行修正</option>
-            <option value="quoteAndHalfwidthSpace">半角スペースに統一して引用（> ）をつける</option>
-            <option value="adjustKagikakko">括弧のネストを自動調整（「」と『』）</option>
-            <option value="spaceToFullwidth">半角スペースを全角に統一</option>
-            <option value="spaceToHalfwidth">全角スペースを半角に統一</option>
-            <option value="markdownQuote">Markdown引用（> ）</option>
-            <option value="markdownBulletList">Markdown箇条書き（* ）</option>
-            <option value="markdownNumberedList">Markdown番号付きリスト</option>
-            <option value="codeBlockMarkdown">コードブロック (markdown)</option>
-            <option value="codeBlockAhk">コードブロック (autohotkey)</option>
-            <option value="codeBlockPython">コードブロック (python)</option>
-            <option value="codeBlockJs">コードブロック (javascript)</option>
-            <option value="codeBlockGeneric">コードブロック (汎用)</option>
-            <option value="newlinesToSlash">改行を " / " に変換</option>
-            <option value="newlinesToSpace">改行をスペースに変換</option>
+            <option value="" disabled selected hidden>変換機能を選択してください</option>
+            <optgroup label="💻 コードブロック化 (AI自動判定)">
+                <option value="codeBlockAuto">コードブロック (自動判定)</option>
+                <option value="codeBlockMarkdown">コードブロック (markdown)</option>
+                <option value="codeBlockJs">コードブロック (javascript)</option>
+                <option value="codeBlockAhk">コードブロック (autohotkey)</option>
+                <option value="codeBlockPython">コードブロック (python)</option>
+                <option value="codeBlockGeneric">コードブロック (汎用)</option>
+            </optgroup>
+            <optgroup label="✍️ テキスト整形・Markdownリスト化">
+                <option value="markdownGeminiFix">Markdown修正 (Gemini用)</option>
+                <option value="geminiNewlineFix">Gemini改行修正</option>
+                <option value="adjustKagikakko">括弧のネスト自動調整 (「」と『』)</option>
+                <option value="markdownQuote">Markdown引用 (>)</option>
+                <option value="quoteAndHalfwidthSpace">半角スペース統一 ＋ 引用 (>)</option>
+                <option value="markdownBulletList">Markdown箇条書き (*)</option>
+                <option value="markdownNumberedList">Markdown番号付きリスト</option>
+            </optgroup>
+            <optgroup label="🔄 空白・改行の変換">
+                <option value="stripTrailingWhitespace">行末の空白削除</option>
+                <option value="trimWhitespace">行頭の空白削除</option>
+                <option value="spaceToFullwidth">半角スペース ➔ 全角統一</option>
+                <option value="spaceToHalfwidth">全角スペース ➔ 半角統一</option>
+                <option value="newlinesToSlash">改行 ➔ " / " に変換</option>
+                <option value="newlinesToSpace">改行 ➔ 半角スペースに変換</option>
+            </optgroup>
         </select>
 
-        <button id="convertAndCopyButton">[B]変換してコピー</button>
+        <!-- プライバシー保護の明記 -->
+        <div id="privacyNote" class="privacy-note">
+            <span class="shield-icon">🛡️</span>
+            <div>
+                <strong>プライバシーポリシー：</strong>
+                「コードブロック (自動判定)」以外の機能は、すべてローカルで実行されます。自動判定を利用する際のみ、言語判定のため入力内容がPuterおよびAIプロバイダ（OpenAI等）のサーバーへ送信されます。
+            </div>
+        </div>
+
+        <!-- 🚀 統合操作パネル (コントロールエリア) -->
+        <div class="control-panel">
+            <div class="main-actions">
+                <button id="convertAndCopyButton" class="btn-primary">[B] 変換してコピー</button>
+                <button id="pasteAndConvertButton" class="btn-success">[A+B] 貼り付けて一発実行</button>
+            </div>
+            <button id="pasteButton" class="btn-secondary">[A] クリップボードから貼り付け</button>
+        </div>
 
         <label for="outputText">変換結果 (自動コピーされます):</label>
         <textarea id="outputText" rows="10" readonly></textarea>
     </div>
 
+<!-- 固定フッターステータスバー -->
+<div class="status-bar">
+    <span>⚠️ AI自動判定はPuterおよび外部AI APIを利用しています。判定結果の正確性は保証されません。本ツールは技術検証・実験用途を含みます。</span>
+</div>
+
+    <script src="ai-detector.js"></script>
     <script src="script.js"></script>
 </body>
 
