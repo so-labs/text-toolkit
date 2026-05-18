@@ -8,14 +8,31 @@
     <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        (function(){
+            try {
+                var saved = localStorage.getItem('theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = saved || (prefersDark ? 'dark' : 'light');
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark-mode');
+                }
+            } catch (e) {
+                /* ignore */
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <button id="themeToggle" class="theme-toggle" aria-label="テーマ切り替え">🌙</button>
     <div class="container">
-        <h1>テキスト変換ツール</h1>
+        <div class="hero">
+            <h1>テキスト変換ツール</h1>
+            <p class="hero-subtitle">シンプルで使いやすいテキスト整形ツール</p>
+        </div>
 
         <label for="inputText">変換したいテキスト:</label>
         <textarea id="inputText" rows="10" placeholder="ここにテキストを入力してください"></textarea>

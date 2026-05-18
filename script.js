@@ -10,11 +10,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ダークモード関連の処理
     const applyTheme = (theme) => {
+        const root = document.documentElement;
+        const bodyEl = document.body;
         if (theme === 'dark') {
-            document.body.classList.add('dark-mode');
+            root.classList.add('dark-mode');
+            bodyEl.classList.add('dark-mode');
             themeToggle.textContent = '☀️';
         } else {
-            document.body.classList.remove('dark-mode');
+            root.classList.remove('dark-mode');
+            bodyEl.classList.remove('dark-mode');
             themeToggle.textContent = '🌙';
         }
     };
@@ -28,8 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
     themeToggle.addEventListener('click', () => {
         const isDark = document.body.classList.contains('dark-mode');
         const newTheme = isDark ? 'light' : 'dark';
+        // Apply a short helper class to ensure CSS transitions are smooth
+        document.documentElement.classList.add('theme-transition');
         applyTheme(newTheme);
         localStorage.setItem('theme', newTheme);
+        window.setTimeout(() => {
+            document.documentElement.classList.remove('theme-transition');
+        }, 420);
     });
 
     // ヘルパー関数群
