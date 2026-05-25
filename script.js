@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const pasteButton = document.getElementById('pasteButton');
     const pasteAndConvertButton = document.getElementById('pasteAndConvertButton');
     const themeToggle = document.getElementById('themeToggle');
-    const privacyNote = document.getElementById('privacyNote');
+    const consentModal = document.getElementById('consentModal');
+    const consentApproveBtn = document.getElementById('consentApproveBtn');
+    const consentCancelBtn = document.getElementById('consentCancelBtn');
 
     // ダークモード関連の処理
     const applyTheme = (theme) => {
@@ -41,6 +43,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 420);
     });
 
+    // Cookie操作ユーティリティ
+    const CookieUtils = {
+        set: (name, value, days) => {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+        },
+        get: (name) => {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+    };
+
     // ヘルパー関数群
     const Utils = {
         // 改行コードをLFに正規化
@@ -51,6 +76,32 @@ document.addEventListener('DOMContentLoaded', () => {
         toCRLF: (text) => {
             return text.replace(/\n/g, '\r\n');
         }
+    };
+
+    // 同意確認を求めるプロミスを返す関数
+    const showConsentModal = () => {
+        return new Promise((resolve) => {
+            consentModal.classList.remove('hidden');
+
+            const handleApprove = () => {
+                cleanup();
+                resolve(true);
+            };
+
+            const handleCancel = () => {
+                cleanup();
+                resolve(false);
+            };
+
+            const cleanup = () => {
+                consentModal.classList.add('hidden');
+                consentApproveBtn.removeEventListener('click', handleApprove);
+                consentCancelBtn.removeEventListener('click', handleCancel);
+            };
+
+            consentApproveBtn.addEventListener('click', handleApprove);
+            consentCancelBtn.addEventListener('click', handleCancel);
+        });
     };
 
     // 変換ロジックをまとめた関数
@@ -271,6 +322,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const textToConvert = Utils.normalizeNewlines(inputText.value);
         const needsDetection = conversionType.value === 'codeBlockAuto';
 
+        if (needsDetection) {
+            const consent = CookieUtils.get('ai_detector_consent');
+            if (consent !== 'true') {
+                const approved = await showConsentModal();
+                if (!approved) {
+                    // 同意されなかった場合は、静かに処理を中止
+                    return;
+                }
+                CookieUtils.set('ai_detector_consent', 'true', 365); // 365日間保存
+            }
+        }
+
         setButtonsBusy(true);
         if (needsDetection) {
             outputText.value = 'AIが言語を判定中...';
@@ -320,17 +383,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // プライバシーポリシーの表示/非表示を動的に制御する関数
-    const updatePrivacyNoteVisibility = () => {
-        if (conversionType.value === 'codeBlockAuto') {
-            privacyNote.style.display = 'flex';
-        } else {
-            privacyNote.style.display = 'none';
-        }
-    };
-
-    conversionType.addEventListener('change', updatePrivacyNoteVisibility);
-    
-    // 初期表示状態を設定
-    updatePrivacyNoteVisibility();
 });

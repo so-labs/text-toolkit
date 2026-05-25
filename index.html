@@ -67,14 +67,6 @@
             </optgroup>
         </select>
 
-        <!-- プライバシー保護の明記 -->
-        <div id="privacyNote" class="privacy-note">
-            <span class="shield-icon">🛡️</span>
-            <div>
-                <strong>プライバシーポリシー：</strong>
-                「コードブロック (自動判定)」以外の機能は、すべてローカルで実行されます。自動判定を利用する際のみ、言語判定のため入力内容がPuterおよびAIプロバイダ（OpenAI等）のサーバーへ送信されます。
-            </div>
-        </div>
 
         <!-- 🚀 統合操作パネル (コントロールエリア) -->
         <div class="control-panel">
@@ -93,6 +85,24 @@
 <div class="status-bar">
     <span>⚠️ AI自動判定はPuterおよび外部AI APIを利用しています。判定結果の正確性は保証されません。本ツールは技術検証・実験用途を含みます。</span>
 </div>
+
+    <!-- 同意確認モーダル -->
+    <div id="consentModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="shield-icon">🛡️</span>
+                <h2>AI自動判定の確認</h2>
+            </div>
+            <div class="modal-body">
+                <p>「コードブロック (自動判定)」を利用する際、言語判定のため入力内容が外部AIプロバイダ（PuterおよびOpenAI等）のサーバーへ送信されます。よろしいですか？</p>
+                <p class="modal-subtext">※同意すると、この設定はCookieに1年間保存され、次回以降の確認が省略されます。</p>
+            </div>
+            <div class="modal-footer">
+                <button id="consentCancelBtn" class="btn-secondary">キャンセル</button>
+                <button id="consentApproveBtn" class="btn-primary">同意して実行</button>
+            </div>
+        </div>
+    </div>
 
     <script src="ai-detector.js"></script>
     <script src="script.js"></script>
