@@ -8,9 +8,11 @@
     <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <script>
-        (function(){
+        (function () {
             try {
                 var saved = localStorage.getItem('theme');
                 var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -40,7 +42,7 @@
         <label for="conversionType">変換の種類を選択:</label>
         <select id="conversionType">
             <option value="" disabled selected hidden>変換機能を選択してください</option>
-            <optgroup label="💻 コードブロック化 (AI自動判定)">
+            <optgroup label="💻 コードブロック化">
                 <option value="codeBlockAuto">コードブロック (自動判定)</option>
                 <option value="codeBlockMarkdown">コードブロック (markdown)</option>
                 <option value="codeBlockJs">コードブロック (javascript)</option>
@@ -65,6 +67,12 @@
                 <option value="newlinesToSlash">改行 ➔ " / " に変換</option>
                 <option value="newlinesToSpace">改行 ➔ 半角スペースに変換</option>
             </optgroup>
+            <optgroup label="🔐 エンコード・デコード">
+                <option value="base64Encode">Base64エンコード</option>
+                <option value="base64Decode">Base64デコード</option>
+                <option value="urlEncode">URLエンコード</option>
+                <option value="urlDecode">URLデコード</option>
+            </optgroup>
         </select>
 
 
@@ -81,10 +89,10 @@
         <textarea id="outputText" rows="10" readonly></textarea>
     </div>
 
-<!-- 固定フッターステータスバー -->
-<div class="status-bar">
-    <span>⚠️ AI自動判定はPuterおよび外部AI APIを利用しています。判定結果の正確性は保証されません。本ツールは技術検証・実験用途を含みます。</span>
-</div>
+    <!-- 固定フッターステータスバー -->
+    <div class="status-bar">
+        <span>⚠️ AI自動判定はPuterおよび外部AI APIを利用しています。判定結果の正確性は保証されません。本ツールは技術検証・実験用途を含みます。</span>
+    </div>
 
     <!-- 同意確認モーダル -->
     <div id="consentModal" class="modal-overlay hidden">
@@ -95,7 +103,6 @@
             </div>
             <div class="modal-body">
                 <p>「コードブロック (自動判定)」を利用する際、言語判定のため入力内容が外部AIプロバイダ（PuterおよびOpenAI等）のサーバーへ送信されます。よろしいですか？</p>
-                <p class="modal-subtext">※同意すると、この設定はCookieに1年間保存され、次回以降の確認が省略されます。</p>
             </div>
             <div class="modal-footer">
                 <button id="consentCancelBtn" class="btn-secondary">キャンセル</button>

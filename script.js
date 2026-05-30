@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 2. その結果に対して、2つ連続する改行を1つに減らす
                 convertedText = tempText.replace(/\n\n/g, '\n');
                 // 3. NBSP(ノーブレークスペース)を半角スペースに変換する
-                convertedText = convertedText.replace(/\u00A0/g, ' ');
+                convertedText = convertedText.replace(/ /g, ' ');
                 break;
 
             /* --- コードブロック自動判定ロジック適用 --- */
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'markdownGeminiFix':
                 convertedText = textToConvert
                     // 1. NBSPを半角スペースに
-                    .replace(/\u00A0/g, ' ')
+                    .replace(/ /g, ' ')
 
                     // 2. 水平線の削除
                     .replace(/^\s*---\s*$/gm, '')
@@ -271,6 +271,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     .replace(/\n{3,}/g, '\n\n')
                     .trim();
                 break;
+            case 'base64Encode':
+                convertedText = btoa(unescape(encodeURIComponent(textToConvert)));
+                break;
+            case 'base64Decode': {
+                try {
+                    convertedText = decodeURIComponent(escape(atob(textToConvert)));
+                } catch (e) {
+                    convertedText = '【エラー】有効なBase64文字列ではありません';
+                }
+                break;
+            }
+            case 'urlEncode':
+                convertedText = encodeURIComponent(textToConvert);
+                break;
+            case 'urlDecode': {
+                try {
+                    convertedText = decodeURIComponent(textToConvert);
+                } catch (e) {
+                    convertedText = '【エラー】有効なURLエンコード文字列ではありません';
+                }
+                break;
+            }
             default:
                 convertedText = textToConvert;
         }
