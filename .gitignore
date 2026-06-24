@@ -1,4 +1,18 @@
-# Markdownエクスポートファイル
+# ログファイルやキャッシュ
+*.log
+.DS_Store
+.eslintcache
 export_*.md
-
+__pycache__
+*.diff
+*.txt
 .antigravitycli
+
+# 設定ファイル
+*config.json
+
+# 作業中ファイル
+*.local.*
+
+# ツールファイル
+devtools/

@@ -1,3 +1,3 @@
 # text-toolkit
 
-A versatile web-based text manipulation tool.
+多用途なウェブベースのテキスト加工ツール。
