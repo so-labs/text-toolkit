@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const inputText = document.getElementById('inputText');
     const conversionType = document.getElementById('conversionType');
     const convertAndCopyButton = document.getElementById('convertAndCopyButton');
@@ -142,6 +142,16 @@
             const lines = text.split('\n');
             return lines.map(line => line.trim() === '' ? '>' : '> ' + line).join('\n');
         },
+        markdownBulletList: (text) => {
+            const lines = text.split('\n');
+            const processedLines = [];
+            lines.forEach(line => {
+                if (line.trim().length > 0) {
+                    processedLines.push(`- ${line}`);
+                }
+            });
+            return processedLines.join('\n');
+        },
         markdownNumberedList: (text) => {
             const lines = text.split('\n');
             let counter = 1;
@@ -164,17 +174,11 @@
             return Utils.createCodeBlock(detectedLang, text);
         },
         codeBlockMarkdown: (text) => Utils.createCodeBlock('markdown', text),
-        codeBlockAhk: (text) => Utils.createCodeBlock('autohotkey', text),
         codeBlockPython: (text) => Utils.createCodeBlock('python', text),
         codeBlockJs: (text) => Utils.createCodeBlock('javascript', text),
         codeBlockGeneric: (text) => Utils.createCodeBlock('', text),
         newlinesToSlash: (text) => text.replace(/\n/g, ' / '),
         newlinesToSpace: (text) => text.replace(/\n/g, ' '),
-        quoteAndHalfwidthSpace: (text) => {
-            const tempText = text.replace(/　/g, ' ');
-            const lines = tempText.split('\n');
-            return lines.map(line => line.trim() === '' ? '>' : '> ' + line).join('\n');
-        },
         markdownGeminiFix: (text) => {
             return text
                 .replace(/ /g, ' ')
