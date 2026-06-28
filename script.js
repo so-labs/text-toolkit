@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
     const inputText = document.getElementById('inputText');
     const conversionType = document.getElementById('conversionType');
     const convertAndCopyButton = document.getElementById('convertAndCopyButton');
@@ -75,6 +75,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // 改行コードをCRLFに変換
         toCRLF: (text) => {
             return text.replace(/\n/g, '\r\n');
+        },
+        // 指定された言語と入力テキストから、適切なバッククォート数で囲んだ文字列を生成する
+        createCodeBlock: (lang, text) => {
+            // 行頭にあるバッククォートの連続を検索（無関係なインラインバッククォートを除外）
+            const matches = text.match(/^`+/gm) || [];
+            // 最も長いバッククォートの列の長さを取得（なければ0）
+            const maxTicks = matches.length > 0 ? Math.max(...matches.map(m => m.length)) : 0;
+            // 囲うバッククォートの数は (最大数 + 1) か 3 の大きい方
+            const tickCount = Math.max(3, maxTicks + 1);
+            const fence = "`".repeat(tickCount);
+
+            return `${fence}${lang}\n${text}\n${fence}`;
         }
     };
 
@@ -104,199 +116,110 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // 変換タイプに応じた個別の変換処理マップ
+    const converters = {
+        adjustKagikakko: (text) => {
+            let nestingLevel = 0;
+            let convertedText = '';
+            for (const char of text) {
+                if (char === '「' || char === '『') {
+                    nestingLevel++;
+                    convertedText += (nestingLevel % 2 !== 0) ? '「' : '『';
+                } else if (char === '」' || char === '』') {
+                    convertedText += (nestingLevel % 2 !== 0) ? '」' : '』';
+                    if (nestingLevel > 0) nestingLevel--;
+                } else {
+                    convertedText += char;
+                }
+            }
+            return convertedText;
+        },
+        trimWhitespace: (text) => text.replace(/^[ ]+/gm, ''),
+        stripTrailingWhitespace: (text) => text.replace(/[ ]+$/gm, ''),
+        spaceToFullwidth: (text) => text.replace(/ /g, '　'),
+        spaceToHalfwidth: (text) => text.replace(/　/g, ' '),
+        markdownQuote: (text) => {
+            const lines = text.split('\n');
+            return lines.map(line => line.trim() === '' ? '>' : '> ' + line).join('\n');
+        },
+        markdownNumberedList: (text) => {
+            const lines = text.split('\n');
+            let counter = 1;
+            const processedLines = [];
+            lines.forEach(line => {
+                if (line.trim().length > 0) {
+                    processedLines.push(`${counter}. ${line}`);
+                    counter++;
+                }
+            });
+            return processedLines.join('\n');
+        },
+        geminiNewlineFix: (text) => {
+            const tempText = text.replace(/\n\n\n/g, '\n\n');
+            const convertedText = tempText.replace(/\n\n/g, '\n');
+            return convertedText.replace(/ /g, ' ');
+        },
+        codeBlockAuto: async (text) => {
+            const detectedLang = await AIDetector.detect(text);
+            return Utils.createCodeBlock(detectedLang, text);
+        },
+        codeBlockMarkdown: (text) => Utils.createCodeBlock('markdown', text),
+        codeBlockAhk: (text) => Utils.createCodeBlock('autohotkey', text),
+        codeBlockPython: (text) => Utils.createCodeBlock('python', text),
+        codeBlockJs: (text) => Utils.createCodeBlock('javascript', text),
+        codeBlockGeneric: (text) => Utils.createCodeBlock('', text),
+        newlinesToSlash: (text) => text.replace(/\n/g, ' / '),
+        newlinesToSpace: (text) => text.replace(/\n/g, ' '),
+        quoteAndHalfwidthSpace: (text) => {
+            const tempText = text.replace(/　/g, ' ');
+            const lines = tempText.split('\n');
+            return lines.map(line => line.trim() === '' ? '>' : '> ' + line).join('\n');
+        },
+        markdownGeminiFix: (text) => {
+            return text
+                .replace(/ /g, ' ')
+                .replace(/^\s*---\s*$/gm, '')
+                .replace(/\*\*([^*]+)([「\『（])(.*?)([」\』）])\*\*/g, '**$1**$2**$3**$4')
+                .replace(/\*\*([「\『（])(.*?)([」\』）])\*\*/g, '$1**$2**$3')
+                .replace(/^(\s*)\* /gm, '$1- ')
+                .replace(/[ ]+\|/g, '|')
+                .replace(/\|[ ]+/g, '|')
+                .replace(/([^\n])\n(#+ )/g, '$1\n\n$2')
+                .replace(/^(#+ .+)$(?!\n\n)/gm, '$1\n')
+                .replace(/([^\n#\-])\n(- )/g, '$1\n\n$2')
+                .replace(/(\s*- .*)\n\n+(\s*- )/g, '$1\n$2')
+                .replace(/^([ ]+)- /gm, (match, spaces) => {
+                    return '  '.repeat(Math.ceil(spaces.length / 4)) + '- ';
+                })
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+        },
+        base64Encode: (text) => btoa(unescape(encodeURIComponent(text))),
+        base64Decode: (text) => {
+            try {
+                return decodeURIComponent(escape(atob(text)));
+            } catch (e) {
+                return '【エラー】有効なBase64文字列ではありません';
+            }
+        },
+        urlEncode: (text) => encodeURIComponent(text),
+        urlDecode: (text) => {
+            try {
+                return decodeURIComponent(text);
+            } catch (e) {
+                return '【エラー】有効なURLエンコード文字列ではありません';
+            }
+        }
+    };
+
     // 変換ロジックをまとめた関数
     const performConversion = async (textToConvert) => {
         const selectedType = conversionType.value;
-        let convertedText = '';
-
-        // コードブロック処理用の共通ロジック
-        // 指定された言語と入力テキストから、適切なバッククォート数で囲んだ文字列を生成する
-        const createCodeBlock = (lang, text) => {
-            // 行頭にあるバッククォートの連続を検索（無関係なインラインバッククォートを除外）
-            const matches = text.match(/^`+/gm) || [];
-            // 最も長いバッククォートの列の長さを取得（なければ0）
-            const maxTicks = matches.length > 0 ? Math.max(...matches.map(m => m.length)) : 0;
-            // 囲うバッククォートの数は (最大数 + 1) か 3 の大きい方
-            const tickCount = Math.max(3, maxTicks + 1);
-            const fence = "`".repeat(tickCount);
-
-            return `${fence}${lang}\n${text}\n${fence}`;
-        };
-
-        switch (selectedType) {
-            case 'adjustKagikakko':
-                let nestingLevel = 0;
-                for (const char of textToConvert) {
-                    if (char === '「' || char === '『') {
-                        nestingLevel++;
-                        convertedText += (nestingLevel % 2 !== 0) ? '「' : '『';
-                    } else if (char === '」' || char === '』') {
-                        convertedText += (nestingLevel % 2 !== 0) ? '」' : '』';
-                        if (nestingLevel > 0) nestingLevel--;
-                    } else {
-                        convertedText += char;
-                    }
-                }
-                break;
-            case 'trimWhitespace':
-                convertedText = textToConvert.replace(/^[ ]+/gm, '');
-                break;
-            case 'stripTrailingWhitespace':
-                convertedText = textToConvert.replace(/[ ]+$/gm, '');
-                break;
-            case 'spaceToFullwidth':
-                convertedText = textToConvert.replace(/ /g, '　');
-                break;
-            case 'spaceToHalfwidth':
-                convertedText = textToConvert.replace(/　/g, ' ');
-                break;
-            case 'markdownQuote':
-                // 空行には ">" のみ、それ以外には "> " を付加
-                var linesForQuote = textToConvert.split('\n');
-                var quotedText = '';
-
-                // 各行に対して処理を行う
-                linesForQuote.forEach((line, index) => {
-                    if (index > 0) { // 最初の行以外は改行を追加
-                        quotedText += '\n';
-                    }
-                    if (line.trim() === '') {
-                        quotedText += '>'; // 空行（空白のみの行も含む）の場合
-                    } else {
-                        quotedText += '> ' + line; // それ以外の行の場合
-                    }
-                });
-                convertedText = quotedText;
-                break;
-            case 'markdownNumberedList':
-                // 空行をスキップして連番を振る
-                var numberedLines = textToConvert.split('\n');
-                var counter = 1;
-                var processedNumberedLines = [];
-
-                numberedLines.forEach(line => {
-                    // 行頭・行末の空白をトリムし、その結果が空でない場合のみ処理
-                    if (line.trim().length > 0) {
-                        processedNumberedLines.push(`${counter}. ${line}`);
-                        counter++;
-                    }
-                    // 空行（空白のみの行も含む）の場合は何もせずスキップする
-                });
-                convertedText = processedNumberedLines.join('\n');
-                break;
-            case 'geminiNewlineFix':
-                // 1. 3つ連続する改行を2つに減らす
-                var tempText = textToConvert.replace(/\n\n\n/g, '\n\n');
-                // 2. その結果に対して、2つ連続する改行を1つに減らす
-                convertedText = tempText.replace(/\n\n/g, '\n');
-                // 3. NBSP(ノーブレークスペース)を半角スペースに変換する
-                convertedText = convertedText.replace(/ /g, ' ');
-                break;
-
-            /* --- コードブロック自動判定ロジック適用 --- */
-            case 'codeBlockAuto': {
-                const detectedLang = await AIDetector.detect(textToConvert);
-                convertedText = createCodeBlock(detectedLang, textToConvert);
-                break;
-            }
-            case 'codeBlockMarkdown':
-                convertedText = createCodeBlock('markdown', textToConvert);
-                break;
-            case 'codeBlockAhk':
-                convertedText = createCodeBlock('autohotkey', textToConvert);
-                break;
-            case 'codeBlockPython':
-                convertedText = createCodeBlock('python', textToConvert);
-                break;
-            case 'codeBlockJs':
-                convertedText = createCodeBlock('javascript', textToConvert);
-                break;
-            case 'codeBlockGeneric':
-                convertedText = createCodeBlock('', textToConvert);
-                break;
-            /* -------------------------------------- */
-
-            case 'newlinesToSlash':
-                convertedText = textToConvert.replace(/\n/g, ' / ');
-                break;
-            case 'newlinesToSpace':
-                convertedText = textToConvert.replace(/\n/g, ' ');
-                break;
-            case 'quoteAndHalfwidthSpace':
-                // 1. 全角スペースを半角スペースに統一
-                var tempText = textToConvert.replace(/　/g, ' ');
-
-                // 2. 空行には ">" のみ、それ以外には "> " を付加
-                var linesForQuoteAndSpace = tempText.split('\n');
-                var quotedAndSpacedText = '';
-
-                linesForQuoteAndSpace.forEach((line, index) => {
-                    if (index > 0) { // 最初の行以外は改行を追加
-                        quotedAndSpacedText += '\n';
-                    }
-                    if (line.trim() === '') {
-                        quotedAndSpacedText += '>'; // 空行（空白のみの行も含む）の場合
-                    } else {
-                        quotedAndSpacedText += '> ' + line; // それ以外の行の場合
-                    }
-                });
-                convertedText = quotedAndSpacedText;
-                break;
-            case 'markdownGeminiFix':
-                convertedText = textToConvert
-                    // 1. NBSPを半角スペースに
-                    .replace(/ /g, ' ')
-
-                    // 2. 水平線の削除
-                    .replace(/^\s*---\s*$/gm, '')
-
-                    // 3. 強調内の全角括弧を分割する (例: **A（B）** -> **A**（**B**）)
-                    // 強調の開始と終了の間に全角括弧がある場合、一旦強調を閉じて括弧を開き直す
-                    .replace(/\*\*([^*]+)([「『（])(.*?)([」』）])\*\*/g, '**$1**$2**$3**$4')
-
-                    // 4. 括弧の外側の強調を内側に移動 (例: **「A」** -> 「**A**」)
-                    .replace(/\*\*([「『（])(.*?)([」』）])\*\*/g, '$1**$2**$3')
-
-                    // --- 以下、リストや見出し、テーブルの修正 ---
-                    .replace(/^(\s*)\* /gm, '$1- ')
-                    .replace(/[ ]+\|/g, '|')
-                    .replace(/\|[ ]+/g, '|')
-                    .replace(/([^\n])\n(#+ )/g, '$1\n\n$2')
-                    .replace(/^(#+ .+)$(?!\n\n)/gm, '$1\n')
-                    .replace(/([^\n#\-])\n(- )/g, '$1\n\n$2')
-                    .replace(/(\s*- .*)\n\n+(\s*- )/g, '$1\n$2')
-                    .replace(/^([ ]+)- /gm, (match, spaces) => {
-                        return '  '.repeat(Math.ceil(spaces.length / 4)) + '- ';
-                    })
-                    .replace(/\n{3,}/g, '\n\n')
-                    .trim();
-                break;
-            case 'base64Encode':
-                convertedText = btoa(unescape(encodeURIComponent(textToConvert)));
-                break;
-            case 'base64Decode': {
-                try {
-                    convertedText = decodeURIComponent(escape(atob(textToConvert)));
-                } catch (e) {
-                    convertedText = '【エラー】有効なBase64文字列ではありません';
-                }
-                break;
-            }
-            case 'urlEncode':
-                convertedText = encodeURIComponent(textToConvert);
-                break;
-            case 'urlDecode': {
-                try {
-                    convertedText = decodeURIComponent(textToConvert);
-                } catch (e) {
-                    convertedText = '【エラー】有効なURLエンコード文字列ではありません';
-                }
-                break;
-            }
-            default:
-                convertedText = textToConvert;
+        const converter = converters[selectedType];
+        if (converter) {
+            return await converter(textToConvert);
         }
-        return convertedText;
+        return textToConvert;
     };
 
     const setButtonsBusy = (busy) => {
