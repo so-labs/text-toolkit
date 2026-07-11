@@ -4,13 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>シンプルなテキスト変換ツール</title>
+    <title>テキスト変換ツール</title>
+    <meta name="description" content="シンプルで使いやすいテキスト整形・変換ツール。コードブロック化、Markdown整形、エンコード/デコードなど多彩な変換機能を提供します。">
     <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <script>
         (function () {
             try {
@@ -20,80 +19,240 @@
                 if (theme === 'dark') {
                     document.documentElement.classList.add('dark-mode');
                 }
-            } catch (e) {
-                /* ignore */
-            }
+            } catch (e) { /* ignore */ }
         })();
     </script>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icons/icon-192.png" type="image/png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#6366f1">
 </head>
 
 <body>
+    <!-- トースト通知コンテナ -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- テーマトグル -->
     <button id="themeToggle" class="theme-toggle" aria-label="テーマ切り替え">🌙</button>
-    <div class="container">
-        <div class="hero">
+
+    <div class="app-wrapper">
+        <!-- ヘッダー -->
+        <header class="app-header">
+            <div class="header-icon">✦</div>
             <h1>テキスト変換ツール</h1>
-            <p class="hero-subtitle">シンプルで使いやすいテキスト整形ツール</p>
-        </div>
+            <p class="header-subtitle">シンプルで使いやすいテキスト整形・変換ツール</p>
+        </header>
 
-        <label for="inputText">変換したいテキスト:</label>
-        <textarea id="inputText" rows="10" placeholder="ここにテキストを入力してください"></textarea>
+        <!-- メインカード -->
+        <main class="main-card">
 
-        <label for="conversionType">変換の種類を選択:</label>
-        <select id="conversionType">
-            <option value="" disabled selected hidden>変換機能を選択してください</option>
-            <optgroup label="💻 コードブロック化">
-                <option value="codeBlockAuto">コードブロック (自動判定)</option>
-                <option value="codeBlockMarkdown">コードブロック (markdown)</option>
-                <option value="codeBlockJs">コードブロック (javascript)</option>
-                <option value="codeBlockPython">コードブロック (python)</option>
-                <option value="codeBlockGeneric">コードブロック (汎用)</option>
-            </optgroup>
-            <optgroup label="✍️ テキスト整形・Markdownリスト化">
-                <option value="markdownGeminiFix">Markdown修正 (Gemini用)</option>
-                <option value="geminiNewlineFix">Gemini改行修正</option>
-                <option value="adjustKagikakko">括弧のネスト自動調整 (「」と『』)</option>
-                <option value="markdownQuote">Markdown引用 (>)</option>
-                <option value="markdownBulletList">Markdown箇条書き (-)</option>
-                <option value="markdownNumberedList">Markdown番号付きリスト</option>
-            </optgroup>
-            <optgroup label="🔄 空白・改行の変換">
-                <option value="stripTrailingWhitespace">行末の空白削除</option>
-                <option value="trimWhitespace">行頭の空白削除</option>
-                <option value="spaceToFullwidth">半角スペース ➔ 全角統一</option>
-                <option value="spaceToHalfwidth">全角スペース ➔ 半角統一</option>
-                <option value="newlinesToSlash">改行 ➔ " / " に変換</option>
-                <option value="newlinesToSpace">改行 ➔ 半角スペースに変換</option>
-            </optgroup>
-            <optgroup label="🔐 エンコード・デコード">
-                <option value="base64Encode">Base64エンコード</option>
-                <option value="base64Decode">Base64デコード</option>
-                <option value="urlEncode">URLエンコード</option>
-                <option value="urlDecode">URLデコード</option>
-            </optgroup>
-        </select>
+            <!-- 入力エリア -->
+            <section class="section">
+                <label class="field-label" for="inputText">
+                    <span class="label-icon">✏️</span> 変換したいテキスト
+                </label>
+                <div class="textarea-wrapper">
+                    <textarea id="inputText" rows="7" placeholder="ここにテキストを入力してください…"></textarea>
+                    <button id="clearInputButton" class="textarea-clear-btn" aria-label="クリア" title="テキストをクリア">✕</button>
+                </div>
+            </section>
 
+            <!-- 変換機能選択 -->
+            <section class="section">
+                <div class="field-label">
+                    <span class="label-icon">⚡</span> 変換機能を選択
+                </div>
 
-        <!-- 🚀 統合操作パネル (コントロールエリア) -->
-        <div class="control-panel">
-            <div class="main-actions">
-                <button id="convertAndCopyButton" class="btn-primary">[B] 変換してコピー</button>
-                <button id="pasteAndConvertButton" class="btn-success">[A+B] 貼り付けて一発実行</button>
-            </div>
-            <button id="pasteButton" class="btn-secondary">[A] クリップボードから貼り付け</button>
-        </div>
+                <!-- hidden select (値の保持用) -->
+                <select id="conversionType" class="hidden-select" aria-label="変換タイプ">
+                    <option value="" disabled selected hidden>変換機能を選択してください</option>
+                    <option value="codeBlockAuto">コードブロック (自動判定)</option>
+                    <option value="codeBlockMarkdown">コードブロック (markdown)</option>
+                    <option value="codeBlockJs">コードブロック (javascript)</option>
+                    <option value="codeBlockPython">コードブロック (python)</option>
+                    <option value="codeBlockGeneric">コードブロック (汎用)</option>
+                    <option value="markdownGeminiFix">Markdown修正 (Gemini用)</option>
+                    <option value="geminiNewlineFix">Gemini改行修正</option>
+                    <option value="adjustKagikakko">括弧のネスト自動調整</option>
+                    <option value="markdownQuote">Markdown引用 (&gt;)</option>
+                    <option value="markdownBulletList">Markdown箇条書き (-)</option>
+                    <option value="markdownNumberedList">Markdown番号付きリスト</option>
+                    <option value="stripTrailingWhitespace">行末の空白削除</option>
+                    <option value="trimWhitespace">行頭の空白削除</option>
+                    <option value="spaceToFullwidth">半角スペース → 全角統一</option>
+                    <option value="spaceToHalfwidth">全角スペース → 半角統一</option>
+                    <option value="newlinesToSlash">改行 → " / " に変換</option>
+                    <option value="newlinesToSpace">改行 → 半角スペースに変換</option>
+                    <option value="base64Encode">Base64エンコード</option>
+                    <option value="base64Decode">Base64デコード</option>
+                    <option value="urlEncode">URLエンコード</option>
+                    <option value="urlDecode">URLデコード</option>
+                </select>
 
-        <label for="outputText">変換結果 (自動コピーされます):</label>
-        <textarea id="outputText" rows="10" readonly></textarea>
-    </div>
+                <!-- カスタム変換タイルUI -->
+                <div class="conversion-picker" id="conversionPicker">
+                    <div class="picker-group">
+                        <div class="picker-group-label">💻 コードブロック化</div>
+                        <div class="picker-tiles">
+                            <button class="tile" data-value="codeBlockAuto">
+                                <span class="tile-icon">🤖</span>
+                                <span class="tile-name">自動判定</span>
+                            </button>
+                            <button class="tile" data-value="codeBlockMarkdown">
+                                <span class="tile-icon">📝</span>
+                                <span class="tile-name">Markdown</span>
+                            </button>
+                            <button class="tile" data-value="codeBlockJs">
+                                <span class="tile-icon">🟨</span>
+                                <span class="tile-name">JavaScript</span>
+                            </button>
+                            <button class="tile" data-value="codeBlockPython">
+                                <span class="tile-icon">🐍</span>
+                                <span class="tile-name">Python</span>
+                            </button>
+                            <button class="tile" data-value="codeBlockGeneric">
+                                <span class="tile-icon">📦</span>
+                                <span class="tile-name">汎用</span>
+                            </button>
+                        </div>
+                    </div>
 
-    <!-- 固定フッターステータスバー -->
-    <div class="status-bar">
-        <span>⚠️ AI自動判定はPuterおよび外部AI APIを利用しています。判定結果の正確性は保証されません。本ツールは技術検証・実験用途を含みます。</span>
+                    <div class="picker-group">
+                        <div class="picker-group-label">✍️ テキスト整形・リスト化</div>
+                        <div class="picker-tiles">
+                            <button class="tile" data-value="markdownGeminiFix">
+                                <span class="tile-icon">✨</span>
+                                <span class="tile-name">Markdown修正<small>(Gemini用)</small></span>
+                            </button>
+                            <button class="tile" data-value="geminiNewlineFix">
+                                <span class="tile-icon">↵</span>
+                                <span class="tile-name">Gemini改行修正</span>
+                            </button>
+                            <button class="tile" data-value="adjustKagikakko">
+                                <span class="tile-icon">「」</span>
+                                <span class="tile-name">括弧ネスト調整</span>
+                            </button>
+                            <button class="tile" data-value="markdownQuote">
+                                <span class="tile-icon">❝</span>
+                                <span class="tile-name">引用ブロック</span>
+                            </button>
+                            <button class="tile" data-value="markdownBulletList">
+                                <span class="tile-icon">•</span>
+                                <span class="tile-name">箇条書きリスト</span>
+                            </button>
+                            <button class="tile" data-value="markdownNumberedList">
+                                <span class="tile-icon">①</span>
+                                <span class="tile-name">番号付きリスト</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="picker-group">
+                        <div class="picker-group-label">🔄 空白・改行の変換</div>
+                        <div class="picker-tiles">
+                            <button class="tile" data-value="stripTrailingWhitespace">
+                                <span class="tile-icon">🧹</span>
+                                <span class="tile-name">行末空白削除</span>
+                            </button>
+                            <button class="tile" data-value="trimWhitespace">
+                                <span class="tile-icon">⇤</span>
+                                <span class="tile-name">行頭空白削除</span>
+                            </button>
+                            <button class="tile" data-value="spaceToFullwidth">
+                                <span class="tile-icon">⟷</span>
+                                <span class="tile-name">半角→全角スペース</span>
+                            </button>
+                            <button class="tile" data-value="spaceToHalfwidth">
+                                <span class="tile-icon">⟵</span>
+                                <span class="tile-name">全角→半角スペース</span>
+                            </button>
+                            <button class="tile" data-value="newlinesToSlash">
+                                <span class="tile-icon">/</span>
+                                <span class="tile-name">改行→スラッシュ</span>
+                            </button>
+                            <button class="tile" data-value="newlinesToSpace">
+                                <span class="tile-icon">⎵</span>
+                                <span class="tile-name">改行→スペース</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="picker-group">
+                        <div class="picker-group-label">🔐 エンコード・デコード</div>
+                        <div class="picker-tiles">
+                            <button class="tile" data-value="base64Encode">
+                                <span class="tile-icon">🔒</span>
+                                <span class="tile-name">Base64エンコード</span>
+                            </button>
+                            <button class="tile" data-value="base64Decode">
+                                <span class="tile-icon">🔓</span>
+                                <span class="tile-name">Base64デコード</span>
+                            </button>
+                            <button class="tile" data-value="urlEncode">
+                                <span class="tile-icon">🌐</span>
+                                <span class="tile-name">URLエンコード</span>
+                            </button>
+                            <button class="tile" data-value="urlDecode">
+                                <span class="tile-icon">🔗</span>
+                                <span class="tile-name">URLデコード</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 選択中の機能バッジ -->
+                <div id="selectedBadge" class="selected-badge hidden">
+                    <span id="selectedBadgeText"></span>
+                    <button id="clearSelectionBtn" class="badge-clear" aria-label="選択解除">✕</button>
+                </div>
+            </section>
+
+            <!-- アクションボタン群 -->
+            <section class="section action-section">
+                <div class="action-grid">
+                    <button id="pasteAndConvertButton" class="btn btn-primary btn-large">
+                        <span class="btn-icon">⚡</span>
+                        <span class="btn-text">
+                            <span class="btn-title">貼り付けて変換</span>
+                            <span class="btn-sub">クリップボード → 変換 → コピー</span>
+                        </span>
+                    </button>
+                    <button id="convertAndCopyButton" class="btn btn-secondary-action">
+                        <span class="btn-icon">🔄</span>
+                        <span class="btn-text">
+                            <span class="btn-title">変換してコピー</span>
+                            <span class="btn-sub">入力内容を変換</span>
+                        </span>
+                    </button>
+                    <button id="pasteButton" class="btn btn-ghost">
+                        <span class="btn-icon">📋</span>
+                        <span class="btn-text">
+                            <span class="btn-title">貼り付けのみ</span>
+                            <span class="btn-sub">クリップボードから入力</span>
+                        </span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 出力エリア -->
+            <section class="section" id="outputSection">
+                <label class="field-label" for="outputText">
+                    <span class="label-icon">📤</span> 変換結果
+                    <span class="label-hint">（自動コピーされます）</span>
+                </label>
+                <div class="textarea-wrapper">
+                    <textarea id="outputText" rows="7" readonly placeholder="変換結果がここに表示されます…"></textarea>
+                    <button id="copyOutputButton" class="textarea-copy-btn" aria-label="コピー" title="クリップボードにコピー">📋</button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- フッター -->
+        <footer class="app-footer">
+            <p>⚠️ AI自動判定はPuterおよび外部AI APIを利用しています。判定結果の正確性は保証されません。本ツールは技術検証・実験用途を含みます。</p>
+        </footer>
     </div>
 
     <!-- 同意確認モーダル -->
@@ -107,8 +266,8 @@
                 <p>「コードブロック (自動判定)」を利用する際、言語判定のため入力内容が外部AIプロバイダ（PuterおよびOpenAI等）のサーバーへ送信されます。よろしいですか？</p>
             </div>
             <div class="modal-footer">
-                <button id="consentCancelBtn" class="btn-secondary">キャンセル</button>
-                <button id="consentApproveBtn" class="btn-primary">同意して実行</button>
+                <button id="consentCancelBtn" class="btn btn-ghost modal-btn">キャンセル</button>
+                <button id="consentApproveBtn" class="btn btn-primary modal-btn">同意して実行</button>
             </div>
         </div>
     </div>
