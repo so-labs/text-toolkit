@@ -60,7 +60,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     tiles.forEach(tile => {
-        tile.addEventListener('click', () => {
+        let isScrolling = false;
+        let startX = 0;
+        let startY = 0;
+
+        // タッチ開始時に位置を記録
+        tile.addEventListener('touchstart', (e) => {
+            isScrolling = false;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        // 指が動いた距離が一定(8px)を超えたらスクロールと判定
+        tile.addEventListener('touchmove', (e) => {
+            if (isScrolling) return;
+            const moveX = Math.abs(e.touches[0].clientX - startX);
+            const moveY = Math.abs(e.touches[0].clientY - startY);
+            if (moveX > 8 || moveY > 8) {
+                isScrolling = true;
+            }
+        }, { passive: true });
+
+        tile.addEventListener('click', (e) => {
+            // スクロール操作だった場合はクリック処理をキャンセル
+            if (isScrolling) {
+                e.preventDefault();
+                isScrolling = false;
+                return;
+            }
             // 既に選択済みならトグル解除
             if (tile.classList.contains('selected')) {
                 selectTile(null);
