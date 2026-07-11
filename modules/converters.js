@@ -36,8 +36,8 @@ export const converters = {
         const tmp = text.replace(/\n\n\n/g, '\n\n');
         return tmp.replace(/\n\n/g, '\n').replace(/ /g, ' ');
     },
-    codeBlockAuto: async (text) => {
-        const detectedLang = await AIDetector.detect(text);
+    codeBlockAuto: async (text, signal) => {
+        const detectedLang = await AIDetector.detect(text, signal);
         return Utils.createCodeBlock(detectedLang, text);
     },
     codeBlockMarkdown: (text) => Utils.createCodeBlock('markdown', text),

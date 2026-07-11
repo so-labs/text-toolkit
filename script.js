@@ -5,23 +5,28 @@ import { converters } from './modules/converters.js';
 import { AIDetector } from './modules/ai-detector.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // ── State ───────────────────────────────────────────────────────────────
+    let activeAbortController = null;
+
     // ── DOM References ───────────────────────────────────────────────────────
-    const inputText            = document.getElementById('inputText');
-    const conversionType       = document.getElementById('conversionType');
+    const inputText = document.getElementById('inputText');
+    const conversionType = document.getElementById('conversionType');
     const convertAndCopyButton = document.getElementById('convertAndCopyButton');
-    const outputText           = document.getElementById('outputText');
-    const pasteButton          = document.getElementById('pasteButton');
-    const pasteAndConvertButton= document.getElementById('pasteAndConvertButton');
-    const themeToggle          = document.getElementById('themeToggle');
-    const consentModal         = document.getElementById('consentModal');
-    const consentApproveBtn    = document.getElementById('consentApproveBtn');
-    const consentCancelBtn     = document.getElementById('consentCancelBtn');
-    const clearInputButton     = document.getElementById('clearInputButton');
-    const copyOutputButton     = document.getElementById('copyOutputButton');
-    const clearSelectionBtn    = document.getElementById('clearSelectionBtn');
-    const selectedBadge        = document.getElementById('selectedBadge');
-    const selectedBadgeText    = document.getElementById('selectedBadgeText');
-    const tiles                = document.querySelectorAll('.tile');
+    const outputText = document.getElementById('outputText');
+    const pasteButton = document.getElementById('pasteButton');
+    const pasteAndConvertButton = document.getElementById('pasteAndConvertButton');
+    const themeToggle = document.getElementById('themeToggle');
+    const consentModal = document.getElementById('consentModal');
+    const consentApproveBtn = document.getElementById('consentApproveBtn');
+    const consentCancelBtn = document.getElementById('consentCancelBtn');
+    const clearInputButton = document.getElementById('clearInputButton');
+    const copyOutputButton = document.getElementById('copyOutputButton');
+    const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+    const selectedBadge = document.getElementById('selectedBadge');
+    const selectedBadgeText = document.getElementById('selectedBadgeText');
+    const tiles = document.querySelectorAll('.tile');
+    const cancelDetectionContainer = document.getElementById('cancelDetectionContainer');
+    const cancelDetectionButton = document.getElementById('cancelDetectionButton');
 
     // ── Dark Mode ─────────────────────────────────────────────────────────────
     initTheme(themeToggle);
@@ -51,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         conversionType.value = tile.dataset.value;
 
         const label = getTileLabel(tile);
-        const icon  = tile.querySelector('.tile-icon').textContent;
+        const icon = tile.querySelector('.tile-icon').textContent;
         selectedBadgeText.textContent = `${icon} ${label}`;
         selectedBadge.classList.remove('hidden');
 
@@ -99,6 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     clearSelectionBtn.addEventListener('click', () => selectTile(null));
 
+    // ── Cancel Detection Button ────────────────────────────────────────────────
+    cancelDetectionButton?.addEventListener('click', () => {
+        if (activeAbortController) {
+            activeAbortController.abort('user');
+        }
+    });
+
     // ── Clear Input Button ────────────────────────────────────────────────────
     clearInputButton.addEventListener('click', () => {
         inputText.value = '';
@@ -120,8 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const showConsentModal = () => new Promise((resolve) => {
         consentModal.classList.remove('hidden');
 
-        const handleApprove = () => { cleanup(); resolve(true);  };
-        const handleCancel  = () => { cleanup(); resolve(false); };
+        const handleApprove = () => { cleanup(); resolve(true); };
+        const handleCancel = () => { cleanup(); resolve(false); };
         const cleanup = () => {
             consentModal.classList.add('hidden');
             consentApproveBtn.removeEventListener('click', handleApprove);
@@ -133,15 +145,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Core Logic ────────────────────────────────────────────────────────────
-    const performConversion = async (text) => {
+    const performConversion = async (text, signal) => {
         const selectedType = conversionType.value;
-        const converter    = converters[selectedType];
-        return converter ? await converter(text) : text;
+        const converter = converters[selectedType];
+        return converter ? await converter(text, signal) : text;
     };
 
-    const setButtonsBusy = (busy) => {
-        convertAndCopyButton.disabled  = busy;
+    const setButtonsBusy = (busy, showCancel = false) => {
+        convertAndCopyButton.disabled = busy;
         pasteAndConvertButton.disabled = busy;
+
+        if (cancelDetectionContainer) {
+            if (busy && showCancel) {
+                cancelDetectionContainer.classList.remove('hidden');
+            } else {
+                cancelDetectionContainer.classList.add('hidden');
+            }
+        }
     };
 
     const copyToClipboardAndShowResult = async (text) => {
@@ -181,27 +201,55 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        setButtonsBusy(true);
+        // キャンセル用の AbortController を作成
+        activeAbortController = new AbortController();
+        const signal = activeAbortController.signal;
+
+        setButtonsBusy(true, needsDetection);
 
         if (needsDetection) {
             outputText.value = '🤖 AIが言語を判定中…';
         }
 
+        // タイムアウト設定 (12秒)
+        const timeoutId = setTimeout(() => {
+            if (activeAbortController) {
+                activeAbortController.abort('timeout');
+            }
+        }, 45000);
+
         try {
             if (needsDetection) {
-                const authSuccess = await AIDetector.ensureAuth();
+                const authSuccess = await AIDetector.ensureAuth(signal);
+                if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
                 if (!authSuccess) {
                     console.log('Puter認証がスキップされたか、またはローカル環境中のため、AI判定なしで汎用コードブロックを出力します。');
                 }
             }
-            const convertedText = await performConversion(textToConvert);
+
+            if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+            const convertedText = await performConversion(textToConvert, signal);
+
+            if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
             await copyToClipboardAndShowResult(convertedText);
         } catch (err) {
-            console.error('変換またはコピーに失敗しました:', err);
-            outputText.value = '【エラー】変換またはコピーに失敗しました。\n\n' + textToConvert;
-            throw err;
+            if (err.name === 'AbortError' || signal.aborted) {
+                const reason = activeAbortController?.signal?.reason || 'user';
+                if (reason === 'timeout') {
+                    showToast('言語判定がタイムアウトしました。', 'warning');
+                } else {
+                    showToast('言語判定をキャンセルしました。', 'info');
+                }
+                outputText.value = '';
+            } else {
+                console.error('変換またはコピーに失敗しました:', err);
+                outputText.value = '【エラー】変換またはコピーに失敗しました。\n\n' + textToConvert;
+                throw err;
+            }
         } finally {
-            setButtonsBusy(false);
+            clearTimeout(timeoutId);
+            activeAbortController = null;
+            setButtonsBusy(false, false);
         }
     };
 

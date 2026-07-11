@@ -537,6 +537,28 @@ textarea {
     border-color: var(--c-border-2);
 }
 
+/* Danger (Cancel) */
+.btn-danger {
+    background: var(--c-danger);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: var(--shadow-xs);
+}
+
+.btn-danger:hover {
+    background: #dc2626; /* Slightly darker red */
+    box-shadow: var(--shadow-sm);
+}
+
+.cancel-container {
+    margin-top: 12px;
+    width: 100%;
+}
+
+.cancel-container.hidden {
+    display: none;
+}
+
 /* Modal buttons override */
 .modal-btn {
     width: auto;

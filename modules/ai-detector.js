@@ -32,10 +32,15 @@ export const AIDetector = (() => {
     };
 
     // Puter.js を動的にロードする（Lazy Load）
-    const loadPuterScript = () => {
-        return new Promise((resolve) => {
+    const loadPuterScript = (signal) => {
+        return new Promise((resolve, reject) => {
             if (typeof puter !== 'undefined') {
                 resolve(true);
+                return;
+            }
+
+            if (signal?.aborted) {
+                reject(new DOMException('Aborted', 'AbortError'));
                 return;
             }
 
@@ -45,11 +50,23 @@ export const AIDetector = (() => {
             if (PUTER_APP_ID) {
                 script.setAttribute('data-app-id', PUTER_APP_ID);
             }
+
+            const onAbort = () => {
+                script.remove();
+                reject(new DOMException('Aborted', 'AbortError'));
+            };
+
+            if (signal) {
+                signal.addEventListener('abort', onAbort);
+            }
+
             script.onload = () => {
+                if (signal) signal.removeEventListener('abort', onAbort);
                 console.log('Puter.js の動的ロードに成功しました。');
                 resolve(true);
             };
             script.onerror = () => {
+                if (signal) signal.removeEventListener('abort', onAbort);
                 console.warn('Puter.js の動的ロードに失敗しました。');
                 resolve(false);
             };
@@ -59,8 +76,10 @@ export const AIDetector = (() => {
 
     return {
         // ロード状態を保証する（ログインプロンプトは一切呼ばず、匿名で自動認証を利用）
-        ensureAuth: async () => {
-            const loaded = await loadPuterScript();
+        ensureAuth: async (signal) => {
+            if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+            const loaded = await loadPuterScript(signal);
+            if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
             if (!loaded || typeof puter === 'undefined') {
                 console.warn('Puter.js が読み込まれていないか、ロードに失敗しました。');
                 return false;
@@ -69,8 +88,9 @@ export const AIDetector = (() => {
         },
 
         // AI言語自動判定の実行（ローカルでも本物のAIを直接呼び出します）
-        detect: async (text) => {
+        detect: async (text, signal) => {
             if (!text.trim()) return FALLBACK_LANG;
+            if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
             if (typeof puter === 'undefined' || !puter?.ai?.chat) {
                 console.warn('Puter.js が読み込まれていません。汎用コードブロックとして出力します。');
@@ -88,7 +108,7 @@ export const AIDetector = (() => {
                 `Analyze the syntax, keywords, and structure of the following text:\n\n\`\`\`\n${sample}\n\`\`\``;
 
             try {
-                const response = await puter.ai.chat(
+                const chatPromise = puter.ai.chat(
                     [
                         { role: 'system', content: systemInstruction },
                         { role: 'user', content: prompt },
@@ -98,8 +118,20 @@ export const AIDetector = (() => {
                         temperature: 0.1
                     }
                 );
-                return normalizeDetectedLanguage(extractChatText(response));
+
+                if (signal) {
+                    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+                    const abortPromise = new Promise((_, reject) => {
+                        signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true });
+                    });
+                    const response = await Promise.race([chatPromise, abortPromise]);
+                    return normalizeDetectedLanguage(extractChatText(response));
+                } else {
+                    const response = await chatPromise;
+                    return normalizeDetectedLanguage(extractChatText(response));
+                }
             } catch (err) {
+                if (err.name === 'AbortError') throw err;
                 console.error('言語判定に失敗しました:', err);
                 return FALLBACK_LANG;
             }
