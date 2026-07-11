@@ -1,9 +1,9 @@
-/**
+﻿/**
  * ai-detector.js
  * Puter.js を使用したAI言語自動判定モジュール
 **/
 
-window.AIDetector = (() => {
+export const AIDetector = (() => {
     // --- Puter.js App ID 設定 ---
     const PUTER_APP_ID = 'app-0278050f-9197-4a67-8493-638ecfe6be05'; 
     const FALLBACK_LANG = '';

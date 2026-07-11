@@ -1,10 +1,14 @@
-const CACHE_NAME = 'text-toolkit-v1';
+﻿const CACHE_NAME = 'text-toolkit-v1';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './script.js',
-  './ai-detector.js',
+  './modules/ai-detector.js',
+  './modules/toast.js',
+  './modules/theme.js',
+  './modules/utils.js',
+  './modules/converters.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png'
