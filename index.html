@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 
 <head>
@@ -9,7 +9,9 @@
     <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <script>
         (function () {
             try {
@@ -54,7 +56,8 @@
                 </label>
                 <div class="textarea-wrapper">
                     <textarea id="inputText" rows="7" placeholder="ここにテキストを入力してください…"></textarea>
-                    <button id="clearInputButton" class="textarea-clear-btn" aria-label="クリア" title="テキストをクリア">✕</button>
+                    <button id="clearInputButton" class="textarea-clear-btn" aria-label="クリア"
+                        title="テキストをクリア">✕</button>
                 </div>
             </section>
 
@@ -90,9 +93,29 @@
                     <option value="urlDecode">URLデコード</option>
                 </select>
 
+                <!-- 変換機能タブナビゲーション -->
+                <div class="conversion-tabs" role="tablist" id="conversionTabs">
+                    <button class="tab-btn active" role="tab" aria-selected="true" data-tab="codeblock">
+                        <span class="tab-icon">💻</span>
+                        <span class="tab-name">コードブロック化</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="textformat">
+                        <span class="tab-icon">✍️</span>
+                        <span class="tab-name">テキスト整形・リスト化</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="whitespace">
+                        <span class="tab-icon">🔄</span>
+                        <span class="tab-name">空白・改行の変換</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="encode">
+                        <span class="tab-icon">🔐</span>
+                        <span class="tab-name">エンコード・デコード</span>
+                    </button>
+                </div>
+
                 <!-- カスタム変換タイルUI -->
                 <div class="conversion-picker" id="conversionPicker">
-                    <div class="picker-group">
+                    <div class="picker-group active" data-group="codeblock">
                         <div class="picker-group-label">💻 コードブロック化</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="codeBlockAuto">
@@ -118,7 +141,7 @@
                         </div>
                     </div>
 
-                    <div class="picker-group">
+                    <div class="picker-group" data-group="textformat">
                         <div class="picker-group-label">✍️ テキスト整形・リスト化</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="markdownGeminiFix">
@@ -148,7 +171,7 @@
                         </div>
                     </div>
 
-                    <div class="picker-group">
+                    <div class="picker-group" data-group="whitespace">
                         <div class="picker-group-label">🔄 空白・改行の変換</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="stripTrailingWhitespace">
@@ -178,7 +201,7 @@
                         </div>
                     </div>
 
-                    <div class="picker-group">
+                    <div class="picker-group" data-group="encode">
                         <div class="picker-group-label">🔐 エンコード・デコード</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="base64Encode">
@@ -253,7 +276,8 @@
                 </label>
                 <div class="textarea-wrapper">
                     <textarea id="outputText" rows="7" readonly placeholder="変換結果がここに表示されます…"></textarea>
-                    <button id="copyOutputButton" class="textarea-copy-btn" aria-label="コピー" title="クリップボードにコピー">📋</button>
+                    <button id="copyOutputButton" class="textarea-copy-btn" aria-label="コピー"
+                        title="クリップボードにコピー">📋</button>
                 </div>
             </section>
 

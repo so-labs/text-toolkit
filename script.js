@@ -1,4 +1,4 @@
-﻿import { showToast } from './modules/toast.js';
+import { showToast } from './modules/toast.js';
 import { initTheme } from './modules/theme.js';
 import { CookieUtils, Utils } from './modules/utils.js';
 import { converters } from './modules/converters.js';
@@ -30,6 +30,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Dark Mode ─────────────────────────────────────────────────────────────
     initTheme(themeToggle);
+
+    // ── Tab Navigation ────────────────────────────────────────────────────────
+    const tabBtns = document.querySelectorAll('#conversionTabs .tab-btn');
+    const pickerGroups = document.querySelectorAll('#conversionPicker .picker-group');
+
+    const switchTab = (targetTabName) => {
+        tabBtns.forEach(btn => {
+            if (btn.dataset.tab === targetTabName) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+            } else {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-selected', 'false');
+            }
+        });
+
+        pickerGroups.forEach(group => {
+            if (group.dataset.group === targetTabName) {
+                group.classList.add('active');
+            } else {
+                group.classList.remove('active');
+            }
+        });
+    };
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchTab(btn.dataset.tab);
+        });
+    });
+
+    // 初期状態のタブを選択（ブラウザの自動復元値を考慮）
+    const initialValue = conversionType.value;
+    let initialTab = 'codeblock';
+    if (initialValue) {
+        const matchingTile = document.querySelector(`.tile[data-value="${initialValue}"]`);
+        if (matchingTile) {
+            const group = matchingTile.closest('.picker-group');
+            if (group && group.dataset.group) {
+                initialTab = group.dataset.group;
+                selectTile(matchingTile);
+            }
+        }
+    }
+    switchTab(initialTab);
 
     // ── Tile Picker ────────────────────────────────────────────────────────────
     /** タイルのラベルテキストを取得 */
