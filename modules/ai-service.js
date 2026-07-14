@@ -1,11 +1,11 @@
 ﻿/**
- * ai-detector.js
- * Puter.js を使用したAI言語自動判定モジュール
+ * ai-service.js
+ * Puter.js を使用したAI処理モジュール（言語自動判定・テーブル整形等）
 **/
 
-export const AIDetector = (() => {
+export const AIService = (() => {
     // --- Puter.js App ID 設定 ---
-    const PUTER_APP_ID = 'app-0278050f-9197-4a67-8493-638ecfe6be05'; 
+    const PUTER_APP_ID = 'app-0278050f-9197-4a67-8493-638ecfe6be05';
     const FALLBACK_LANG = '';
     const LANGUAGE_DETECT_MAX_CHARS = 4000;
     const PUTER_AI_MODEL = 'gpt-4o-mini'; // 使用するモデル
@@ -87,8 +87,8 @@ export const AIDetector = (() => {
             return true;
         },
 
-        // AI言語自動判定の実行（ローカルでも本物のAIを直接呼び出します）
-        detect: async (text, signal) => {
+        // AI言語自動判定の実行
+        detectLanguage: async (text, signal) => {
             if (!text.trim()) return FALLBACK_LANG;
             if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
@@ -134,6 +134,68 @@ export const AIDetector = (() => {
                 if (err.name === 'AbortError') throw err;
                 console.error('言語判定に失敗しました:', err);
                 return FALLBACK_LANG;
+            }
+        },
+
+        // AIテーブル整形の実行
+        formatTable: async (text, signal) => {
+            if (!text.trim()) return text;
+            if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+
+            if (typeof puter === 'undefined' || !puter?.ai?.chat) {
+                console.warn('Puter.js が読み込まれていません。元のテキストを返します。');
+                return text;
+            }
+
+            const systemInstruction = `You are an expert in data formatting.
+
+# Task
+Read the provided input text data (CSV, TSV, space-separated, or unstructured) and format it into a Markdown table.
+
+# Constraints
+1. Strictly follow the minimal format for the table as shown below:
+   - Do not insert spaces around "|", "-", or the data.
+   - Use exactly three hyphens "---" for the separator.
+   - Do not use alignment such as ":---" (left, center, or right alignment).
+2. If there is no header row, infer appropriate column names from the data content and create them.
+3. The language of the header row must match the content (language) of the input data (e.g., English headers for English data, Japanese headers for Japanese data).
+4. Output only the Markdown table. Do not include any greetings, explanations, or other text.
+
+Output Example:
+|ColumnName1|ColumnName2|ColumnName3|
+|---|---|---|
+|Data1|Data2|Data3|
+|Data4|Data5|Data6|`;
+
+            const prompt = `[Input Text]\n${text}`;
+
+            try {
+                const chatPromise = puter.ai.chat(
+                    [
+                        { role: 'system', content: systemInstruction },
+                        { role: 'user', content: prompt },
+                    ],
+                    {
+                        model: PUTER_AI_MODEL,
+                        temperature: 0.0
+                    }
+                );
+
+                if (signal) {
+                    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+                    const abortPromise = new Promise((_, reject) => {
+                        signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true });
+                    });
+                    const response = await Promise.race([chatPromise, abortPromise]);
+                    return extractChatText(response);
+                } else {
+                    const response = await chatPromise;
+                    return extractChatText(response);
+                }
+            } catch (err) {
+                if (err.name === 'AbortError') throw err;
+                console.error('テーブル整形に失敗しました:', err);
+                return text; // エラー時はフォールバックとして元テキストを返す
             }
         }
     };

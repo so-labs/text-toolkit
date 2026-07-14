@@ -1,4 +1,4 @@
-﻿import { AIDetector } from './ai-detector.js';
+﻿import { AIService } from './ai-service.js';
 import { Utils } from './utils.js';
 
 export const converters = {
@@ -37,9 +37,10 @@ export const converters = {
         return tmp.replace(/\n\n/g, '\n').replace(/ /g, ' ');
     },
     codeBlockAuto: async (text, signal) => {
-        const detectedLang = await AIDetector.detect(text, signal);
+        const detectedLang = await AIService.detectLanguage(text, signal);
         return Utils.createCodeBlock(detectedLang, text);
     },
+    tableFormatter: async (text, signal) => await AIService.formatTable(text, signal),
     codeBlockMarkdown: (text) => Utils.createCodeBlock('markdown', text),
     codeBlockPython:   (text) => Utils.createCodeBlock('python', text),
     codeBlockJs:       (text) => Utils.createCodeBlock('javascript', text),

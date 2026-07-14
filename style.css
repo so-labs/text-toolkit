@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Design System – CSS Custom Properties
    ============================================================ */
 :root {
@@ -295,8 +295,8 @@ textarea {
    Conversion Tabs (Tab Navigation UI)
    ============================================================ */
 .conversion-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 1px;
     /* 隙間を1pxにして十字の境界線にする */
     margin-bottom: var(--sp-md);
@@ -314,6 +314,7 @@ textarea {
 
 .tab-btn {
     display: flex;
+    flex: 1 1 calc(50% - 2px);
     align-items: center;
     justify-content: center;
     gap: 4px;
@@ -918,6 +919,9 @@ textarea {
     .picker-tiles {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
+    .tab-btn {
+        flex: 1 1 calc(33.333% - 2px);
+    }
 }
 
 /* ============================================================
@@ -968,6 +972,10 @@ textarea {
     /* 右側カラム幅に合わせてタイルを3列均等配置 */
     .picker-tiles {
         grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .tab-btn {
+        flex: 1 1 calc(33.333% - 2px);
     }
 
     /* デスクトップ環境に合わせてテキストエリアの初期高さを微調整 */

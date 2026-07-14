@@ -74,7 +74,8 @@
                 <!-- hidden select (値の保持用) -->
                 <select id="conversionType" class="hidden-select" aria-label="変換タイプ">
                     <option value="" disabled selected hidden>変換機能を選択してください</option>
-                    <option value="codeBlockAuto">コードブロック (自動判定)</option>
+                    <option value="codeBlockAuto">言語自動判定 (コードブロック)</option>
+                    <option value="tableFormatter">テーブル整形 (Markdown)</option>
                     <option value="codeBlockMarkdown">コードブロック (markdown)</option>
                     <option value="codeBlockJs">コードブロック (javascript)</option>
                     <option value="codeBlockPython">コードブロック (python)</option>
@@ -99,33 +100,47 @@
 
                 <!-- 変換機能タブナビゲーション -->
                 <div class="conversion-tabs" role="tablist" id="conversionTabs">
-                    <button class="tab-btn active" role="tab" aria-selected="true" data-tab="codeblock">
+                    <button class="tab-btn active" role="tab" aria-selected="true" data-tab="ai">
+                        <span class="tab-icon">🤖</span>
+                        <span class="tab-name">AI機能</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="codeblock">
                         <span class="tab-icon">💻</span>
-                        <span class="tab-name">コードブロック化</span>
+                        <span class="tab-name">コードブロック</span>
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" data-tab="textformat">
                         <span class="tab-icon">✍️</span>
-                        <span class="tab-name">テキスト整形・リスト化</span>
+                        <span class="tab-name">テキスト整形</span>
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" data-tab="whitespace">
                         <span class="tab-icon">🔄</span>
-                        <span class="tab-name">空白・改行の変換</span>
+                        <span class="tab-name">空白・改行</span>
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" data-tab="encode">
                         <span class="tab-icon">🔐</span>
-                        <span class="tab-name">エンコード・デコード</span>
+                        <span class="tab-name">エンコード</span>
                     </button>
                 </div>
 
                 <!-- カスタム変換タイルUI -->
                 <div class="conversion-picker" id="conversionPicker">
-                    <div class="picker-group active" data-group="codeblock">
-                        <div class="picker-group-label">💻 コードブロック化</div>
+                    <div class="picker-group active" data-group="ai">
+                        <div class="picker-group-label">🤖 AI機能</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="codeBlockAuto">
-                                <span class="tile-icon">🤖</span>
-                                <span class="tile-name">自動判定</span>
+                                <span class="tile-icon">🔍</span>
+                                <span class="tile-name">言語自動判定<small>(コードブロック)</small></span>
                             </button>
+                            <button class="tile" data-value="tableFormatter">
+                                <span class="tile-icon">📊</span>
+                                <span class="tile-name">テーブル整形<small>(Markdown)</small></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="picker-group" data-group="codeblock">
+                        <div class="picker-group-label">💻 コードブロック化</div>
+                        <div class="picker-tiles">
                             <button class="tile" data-value="codeBlockMarkdown">
                                 <span class="tile-icon">📝</span>
                                 <span class="tile-name">Markdown</span>
@@ -260,13 +275,13 @@
                         </span>
                     </button>
                 </div>
-                <!-- 判定中キャンセルボタン -->
-                <div id="cancelDetectionContainer" class="cancel-container hidden">
-                    <button id="cancelDetectionButton" class="btn btn-danger">
+                <!-- 処理中キャンセルボタン -->
+                <div id="cancelAiContainer" class="cancel-container hidden">
+                    <button id="cancelAiButton" class="btn btn-danger">
                         <span class="btn-icon">🛑</span>
                         <span class="btn-text">
-                            <span class="btn-title">自動判定をキャンセル</span>
-                            <span class="btn-sub">判定を中止して元の状態に戻します</span>
+                            <span class="btn-title">AI処理をキャンセル</span>
+                            <span class="btn-sub">処理を中止して元の状態に戻します</span>
                         </span>
                     </button>
                 </div>
@@ -289,7 +304,7 @@
 
         <!-- フッター -->
         <footer class="app-footer">
-            <p>⚠️ AI自動判定はPuterおよび外部AI APIを利用しています。判定結果の正確性は保証されません。本ツールは技術検証・実験用途を含みます。</p>
+            <p>⚠️ AI機能（自動判定・テーブル整形等）はPuterおよび外部AI APIを利用しています。結果の正確性は保証されません。入力内容に機密情報を含めないでください。本ツールは技術検証・実験用途を含みます。</p>
         </footer>
     </div>
 
@@ -298,10 +313,10 @@
         <div class="modal-card">
             <div class="modal-header">
                 <span class="shield-icon">🛡️</span>
-                <h2>AI自動判定の確認</h2>
+                <h2>AI機能の利用確認</h2>
             </div>
             <div class="modal-body">
-                <p>「コードブロック (自動判定)」を利用する際、言語判定のため入力内容が外部AIプロバイダ（PuterおよびOpenAI等）のサーバーへ送信されます。よろしいですか？</p>
+                <p>AI機能を利用する際、入力内容が外部AIプロバイダ（PuterおよびOpenAI等）のサーバーへ送信されます。機密情報などを入力しないようご注意ください。よろしいですか？</p>
             </div>
             <div class="modal-footer">
                 <button id="consentCancelBtn" class="btn btn-ghost modal-btn">キャンセル</button>

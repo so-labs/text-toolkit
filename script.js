@@ -1,8 +1,8 @@
-import { showToast } from './modules/toast.js';
+﻿import { showToast } from './modules/toast.js';
 import { initTheme } from './modules/theme.js';
 import { CookieUtils, Utils } from './modules/utils.js';
 import { converters } from './modules/converters.js';
-import { AIDetector } from './modules/ai-detector.js';
+import { AIService } from './modules/ai-service.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // ── State ───────────────────────────────────────────────────────────────
@@ -25,8 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedBadge = document.getElementById('selectedBadge');
     const selectedBadgeText = document.getElementById('selectedBadgeText');
     const tiles = document.querySelectorAll('.tile');
-    const cancelDetectionContainer = document.getElementById('cancelDetectionContainer');
-    const cancelDetectionButton = document.getElementById('cancelDetectionButton');
+    const cancelAiContainer = document.getElementById('cancelAiContainer');
+    const cancelAiButton = document.getElementById('cancelAiButton');
 
     // ── Dark Mode ─────────────────────────────────────────────────────────────
     initTheme(themeToggle);
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 初期状態のタブを選択（ブラウザの自動復元値を考慮）
     const initialValue = conversionType.value;
-    let initialTab = 'codeblock';
+    let initialTab = 'ai';
     if (initialValue) {
         const matchingTile = document.querySelector(`.tile[data-value="${initialValue}"]`);
         if (matchingTile) {
@@ -149,8 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     clearSelectionBtn.addEventListener('click', () => selectTile(null));
 
-    // ── Cancel Detection Button ────────────────────────────────────────────────
-    cancelDetectionButton?.addEventListener('click', () => {
+    // ── Cancel Ai Button ────────────────────────────────────────────────
+    cancelAiButton?.addEventListener('click', () => {
         if (activeAbortController) {
             activeAbortController.abort('user');
         }
@@ -200,11 +200,11 @@ document.addEventListener('DOMContentLoaded', () => {
         convertAndCopyButton.disabled = busy;
         pasteAndConvertButton.disabled = busy;
 
-        if (cancelDetectionContainer) {
+        if (cancelAiContainer) {
             if (busy && showCancel) {
-                cancelDetectionContainer.classList.remove('hidden');
+                cancelAiContainer.classList.remove('hidden');
             } else {
-                cancelDetectionContainer.classList.add('hidden');
+                cancelAiContainer.classList.add('hidden');
             }
         }
     };
@@ -235,14 +235,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const textToConvert = Utils.normalizeNewlines(inputText.value);
-        const needsDetection = conversionType.value === 'codeBlockAuto';
+        const aiFunctions = ['codeBlockAuto', 'tableFormatter'];
+        const needsAiProcessing = aiFunctions.includes(conversionType.value);
 
-        if (needsDetection) {
-            const consent = CookieUtils.get('ai_detector_consent');
+        if (needsAiProcessing) {
+            const consent = CookieUtils.get('ai_consent');
             if (consent !== 'true') {
                 const approved = await showConsentModal();
                 if (!approved) return;
-                CookieUtils.set('ai_detector_consent', 'true', 365);
+                CookieUtils.set('ai_consent', 'true', 365);
             }
         }
 
@@ -250,10 +251,10 @@ document.addEventListener('DOMContentLoaded', () => {
         activeAbortController = new AbortController();
         const signal = activeAbortController.signal;
 
-        setButtonsBusy(true, needsDetection);
+        setButtonsBusy(true, needsAiProcessing);
 
-        if (needsDetection) {
-            outputText.value = '🤖 AIが言語を判定中…';
+        if (needsAiProcessing) {
+            outputText.value = '🤖 AIが処理中…';
         }
 
         // タイムアウト設定 (12秒)
@@ -264,11 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 45000);
 
         try {
-            if (needsDetection) {
-                const authSuccess = await AIDetector.ensureAuth(signal);
+            if (needsAiProcessing) {
+                const authSuccess = await AIService.ensureAuth(signal);
                 if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
                 if (!authSuccess) {
-                    console.log('Puter認証がスキップされたか、またはローカル環境中のため、AI判定なしで汎用コードブロックを出力します。');
+                    console.log('Puter認証がスキップされたか、またはローカル環境中のため、AI処理をスキップするかフォールバックします。');
                 }
             }
 
@@ -281,9 +282,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (err.name === 'AbortError' || signal.aborted) {
                 const reason = activeAbortController?.signal?.reason || 'user';
                 if (reason === 'timeout') {
-                    showToast('言語判定がタイムアウトしました。', 'warning');
+                    showToast('AI処理がタイムアウトしました。', 'warning');
                 } else {
-                    showToast('言語判定をキャンセルしました。', 'info');
+                    showToast('AI処理をキャンセルしました。', 'info');
                 }
                 outputText.value = '';
             } else {
