@@ -1,4 +1,12 @@
-const CACHE_NAME = 'text-toolkit-v2';
+﻿/**
+ * キャッシュバージョンの命名規則:
+ * text-toolkit-YYYY.MM-rN
+ *
+ * YYYY = 西暦
+ * MM   = 月（01〜12）
+ * rN   = その月のリリース回数
+ */
+const CACHE_NAME = 'text-toolkit-2026.07-r1';
 const ASSETS = [
   './',
   './index.html',
