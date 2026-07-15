@@ -1,7 +1,7 @@
 {
   "name": "テキスト変換ツール",
   "short_name": "TextToolkit",
-  "description": "テキストの変換・整形・エンコードをかんたんに行えるツール",
+  "description": "テキストの変換・整形・エンコードを簡単に行えるツール",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
