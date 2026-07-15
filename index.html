@@ -41,6 +41,8 @@
 
     <!-- テーマトグル -->
     <button id="themeToggle" class="theme-toggle" aria-label="テーマ切り替え">🌙</button>
+    <!-- バブルトグル (PWA時のみJSで表示) -->
+    <button id="bubbleToggle" class="bubble-toggle hidden" aria-label="バブルモード切り替え">🫧</button>
 
     <div class="app-wrapper">
         <!-- ヘッダー -->
@@ -54,7 +56,7 @@
         <main class="main-card">
 
             <!-- 入力エリア -->
-            <section class="section">
+            <section class="section" id="inputTextSection">
                 <label class="field-label" for="inputText">
                     <span class="label-icon">✏️</span> 変換したいテキスト
                 </label>

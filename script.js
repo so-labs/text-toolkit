@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pasteButton = document.getElementById('pasteButton');
     const pasteAndConvertButton = document.getElementById('pasteAndConvertButton');
     const themeToggle = document.getElementById('themeToggle');
+    const bubbleToggle = document.getElementById('bubbleToggle');
     const consentModal = document.getElementById('consentModal');
     const consentApproveBtn = document.getElementById('consentApproveBtn');
     const consentCancelBtn = document.getElementById('consentCancelBtn');
@@ -30,6 +31,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Dark Mode ─────────────────────────────────────────────────────────────
     initTheme(themeToggle);
+
+    // ── Bubble Mode ───────────────────────────────────────────────────────────
+    const isPwa = () => {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    };
+
+    const updateBubbleModeUI = (isBubble) => {
+        const btnTitle = convertAndCopyButton.querySelector('.btn-title');
+        const btnSub = convertAndCopyButton.querySelector('.btn-sub');
+        if (isBubble) {
+            document.body.classList.add('bubble-mode');
+            if (btnTitle) btnTitle.textContent = '変換';
+            if (btnSub) btnSub.textContent = 'クリップボードを直接変換';
+        } else {
+            document.body.classList.remove('bubble-mode');
+            if (btnTitle) btnTitle.textContent = '変換してコピー';
+            if (btnSub) btnSub.textContent = '入力内容を変換';
+        }
+    };
+
+    if (isPwa()) {
+        bubbleToggle?.classList.remove('hidden');
+    }
+
+    // バブルモードの自動判定ロジック
+    let manualBubbleOverride = false;
+
+    const detectBubbleState = () => {
+        if (!isPwa()) return false;
+
+        // PC環境でのPWAウィンドウリサイズによる誤爆を防ぐため、モバイル端末のみで判定
+        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!isMobile) return false;
+
+        const screenW = window.screen.width;
+        const screenH = window.screen.height;
+        const appW = window.innerWidth;
+        const appH = window.innerHeight;
+
+        // 全画面起動時、横幅は物理画面幅と等しい (appW === screenW)
+        // バブル（フローティング）の場合、左右に余白があるため appW < screenW になる
+        // 閾値を0.98 (98%) とし、「少しでも余白があればバブル」と判定する
+        const widthRatio = appW / screenW;
+        const heightRatio = appH / screenH;
+
+        if (widthRatio < 0.98 && heightRatio < 0.98) {
+            return true;
+        }
+        return false;
+    };
+
+    const applyBubbleModeAuto = () => {
+        if (manualBubbleOverride) return;
+        updateBubbleModeUI(detectBubbleState());
+    };
+
+    // 画面サイズが確定するのを少し待ってから判定（Android起動直後のサイズズレ対策）
+    setTimeout(applyBubbleModeAuto, 150);
+
+    window.addEventListener('resize', () => {
+        setTimeout(applyBubbleModeAuto, 150);
+    });
+
+    bubbleToggle?.addEventListener('click', () => {
+        manualBubbleOverride = true; // 手動で切り替えた場合は自動判定を上書き（固定）
+        const isBubble = !document.body.classList.contains('bubble-mode');
+        updateBubbleModeUI(isBubble);
+    });
 
     // ── Tab Navigation ────────────────────────────────────────────────────────
     const tabBtns = document.querySelectorAll('#conversionTabs .tab-btn');
@@ -200,6 +269,19 @@ document.addEventListener('DOMContentLoaded', () => {
         convertAndCopyButton.disabled = busy;
         pasteAndConvertButton.disabled = busy;
 
+        const isBubble = document.body.classList.contains('bubble-mode');
+        if (isBubble) {
+            const btnTitle = convertAndCopyButton.querySelector('.btn-title');
+            const btnSub = convertAndCopyButton.querySelector('.btn-sub');
+            if (busy) {
+                if (btnTitle) btnTitle.textContent = '変換中...';
+                if (btnSub) btnSub.textContent = '処理が終わるまでお待ちください';
+            } else {
+                if (btnTitle) btnTitle.textContent = '変換';
+                if (btnSub) btnSub.textContent = 'クリップボードを直接変換';
+            }
+        }
+
         if (cancelAiContainer) {
             if (busy && showCancel) {
                 cancelAiContainer.classList.remove('hidden');
@@ -234,7 +316,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const textToConvert = Utils.normalizeNewlines(inputText.value);
+        let textToConvert = '';
+        const isBubble = document.body.classList.contains('bubble-mode');
+
+        if (isBubble) {
+            try {
+                textToConvert = await navigator.clipboard.readText();
+                if (!textToConvert) {
+                    showToast('クリップボードが空です。', 'warning');
+                    return;
+                }
+                textToConvert = Utils.normalizeNewlines(textToConvert);
+            } catch {
+                showToast('クリップボードからの読み取りに失敗しました。', 'error');
+                return;
+            }
+        } else {
+            textToConvert = Utils.normalizeNewlines(inputText.value);
+        }
+
         const aiFunctions = ['codeBlockAuto', 'tableFormatter'];
         const needsAiProcessing = aiFunctions.includes(conversionType.value);
 
@@ -255,6 +355,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (needsAiProcessing) {
             outputText.value = '🤖 AIが処理中…';
+            if (isBubble) {
+                showToast('AI処理を開始しました…', 'info');
+            }
         }
 
         // タイムアウト設定 (12秒)

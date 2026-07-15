@@ -653,10 +653,10 @@ textarea {
 /* ============================================================
    Theme Toggle
    ============================================================ */
-.theme-toggle {
+.theme-toggle,
+.bubble-toggle {
     position: fixed;
     top: 16px;
-    right: 16px;
     width: 42px;
     height: 42px;
     border-radius: 50%;
@@ -685,6 +685,57 @@ textarea {
     &:active {
         transform: scale(0.95);
     }
+}
+
+.theme-toggle {
+    right: 16px;
+}
+
+.bubble-toggle {
+    right: 68px;
+}
+
+.bubble-toggle.hidden {
+    display: none;
+}
+
+/* バブルモード時のボディー・レイアウト調整用クラス */
+body.bubble-mode .app-header {
+    padding-top: var(--sp-md);
+    padding-bottom: var(--sp-xs);
+}
+
+body.bubble-mode .app-header .header-subtitle {
+    display: none;
+}
+
+body.bubble-mode #inputTextSection,
+body.bubble-mode #outputSection,
+body.bubble-mode #pasteAndConvertButton,
+body.bubble-mode #pasteButton {
+    display: none !important;
+}
+
+body.bubble-mode .action-grid {
+    grid-template-columns: 1fr;
+}
+
+body.bubble-mode #convertAndCopyButton {
+    grid-column: 1 / -1;
+    background: var(--grad-primary);
+    color: #fff;
+    box-shadow: var(--shadow-primary);
+    border-color: transparent;
+}
+
+body.bubble-mode #convertAndCopyButton:hover {
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.35);
+}
+
+body.bubble-mode .bubble-toggle {
+    background: var(--grad-primary);
+    color: #fff;
+    border-color: transparent;
 }
 
 /* ============================================================
@@ -903,12 +954,18 @@ textarea {
         padding: 12px 14px;
     }
 
-    .theme-toggle {
+    .theme-toggle,
+    .bubble-toggle {
         top: 12px;
-        right: 12px;
         width: 38px;
         height: 38px;
         font-size: 1.1rem;
+    }
+    .theme-toggle {
+        right: 12px;
+    }
+    .bubble-toggle {
+        right: 56px; /* 12px + 38px + 6px */
     }
 }
 
