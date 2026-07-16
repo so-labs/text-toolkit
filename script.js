@@ -37,6 +37,33 @@ document.addEventListener('DOMContentLoaded', () => {
         return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     };
 
+    const checkAndroid17OrAbove = async () => {
+        // 1. User-Agent Client Hints API (プライバシー保護下でも正確なバージョンが取れる)
+        if (navigator.userAgentData) {
+            try {
+                const values = await navigator.userAgentData.getHighEntropyValues(['platformVersion']);
+                const isAndroid = navigator.userAgentData.platform === 'Android' || /Android/i.test(navigator.userAgent);
+                if (isAndroid && values.platformVersion) {
+                    const majorVersion = parseInt(values.platformVersion.split('.')[0], 10);
+                    if (!isNaN(majorVersion)) {
+                        return majorVersion >= 17;
+                    }
+                }
+            } catch (e) {
+                // 取得失敗時は無視してフォールバックへ
+            }
+        }
+
+        // 2. フォールバック: User-Agent 文字列からの抽出
+        const match = navigator.userAgent.match(/Android\s([0-9\.]+)/);
+        if (match) {
+            const majorVersion = parseInt(match[1].split('.')[0], 10);
+            return majorVersion >= 17;
+        }
+
+        return false;
+    };
+
     const updateBubbleModeUI = (isBubble) => {
         const btnTitle = convertAndCopyButton.querySelector('.btn-title');
         const btnSub = convertAndCopyButton.querySelector('.btn-sub');
@@ -50,10 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btnSub) btnSub.textContent = '入力内容を変換';
         }
     };
-
-    if (isPwa()) {
-        bubbleToggle?.classList.remove('hidden');
-    }
 
     // バブルモードの自動判定ロジック
     let manualBubbleOverride = false;
@@ -87,18 +110,30 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBubbleModeUI(detectBubbleState());
     };
 
-    // 画面サイズが確定するのを少し待ってから判定（Android起動直後のサイズズレ対策）
-    setTimeout(applyBubbleModeAuto, 150);
+    const initBubbleMode = async () => {
+        if (!isPwa()) return;
 
-    window.addEventListener('resize', () => {
+        const android17Plus = await checkAndroid17OrAbove();
+        if (!android17Plus) return;
+
+        // PWA かつ Android 17以上の場合のみ有効化
+        bubbleToggle?.classList.remove('hidden');
+
+        // 画面サイズが確定するのを少し待ってから判定（Android起動直後のサイズズレ対策）
         setTimeout(applyBubbleModeAuto, 150);
-    });
 
-    bubbleToggle?.addEventListener('click', () => {
-        manualBubbleOverride = true; // 手動で切り替えた場合は自動判定を上書き（固定）
-        const isBubble = !document.body.classList.contains('bubble-mode');
-        updateBubbleModeUI(isBubble);
-    });
+        window.addEventListener('resize', () => {
+            setTimeout(applyBubbleModeAuto, 150);
+        });
+
+        bubbleToggle?.addEventListener('click', () => {
+            manualBubbleOverride = true; // 手動で切り替えた場合は自動判定を上書き（固定）
+            const isBubble = !document.body.classList.contains('bubble-mode');
+            updateBubbleModeUI(isBubble);
+        });
+    };
+
+    initBubbleMode();
 
     // ── Tab Navigation ────────────────────────────────────────────────────────
     const tabBtns = document.querySelectorAll('#conversionTabs .tab-btn');
