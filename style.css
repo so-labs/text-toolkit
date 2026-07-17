@@ -702,7 +702,21 @@ textarea {
 /* バブルモード時のボディー・レイアウト調整用クラス */
 body.bubble-mode .app-header {
     padding-top: var(--sp-md);
-    padding-bottom: var(--sp-xs);
+    padding-bottom: var(--sp-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+body.bubble-mode .app-header .header-icon {
+    margin-bottom: 0;
+    font-size: 1.5rem;
+}
+
+body.bubble-mode .app-header h1 {
+    margin-bottom: 0;
+    font-size: 1.35rem;
 }
 
 body.bubble-mode .app-header .header-subtitle {
@@ -713,6 +727,10 @@ body.bubble-mode #inputTextSection,
 body.bubble-mode #outputSection,
 body.bubble-mode #pasteAndConvertButton,
 body.bubble-mode #pasteButton {
+    display: none !important;
+}
+
+body.bubble-mode #selectedBadge {
     display: none !important;
 }
 
@@ -736,6 +754,12 @@ body.bubble-mode .bubble-toggle {
     background: var(--grad-primary);
     color: #fff;
     border-color: transparent;
+}
+
+body.bubble-mode .app-footer {
+    padding: 8px var(--sp-md) 16px;
+    font-size: 0.6rem;
+    line-height: 1.4;
 }
 
 /* ============================================================
