@@ -1,4 +1,4 @@
-﻿let themeColorAnimFrame = null;
+let themeColorAnimFrame = null;
 
 function hexToRgb(hex) {
     const bigint = parseInt(hex.slice(1), 16);
@@ -40,7 +40,7 @@ function updateThemeColor(targetHex, animate) {
     function step(currentTime) {
         let elapsed = currentTime - startTime;
         let progress = Math.min(elapsed / duration, 1);
-        
+
         const t = 1 - Math.pow(1 - progress, 3);
 
         const r = Math.round(startRgb.r + (targetRgb.r - startRgb.r) * t);
@@ -59,39 +59,79 @@ function updateThemeColor(targetHex, animate) {
     themeColorAnimFrame = requestAnimationFrame(step);
 }
 
-export const applyTheme = (theme, themeToggle, animate = false) => {
-    const root   = document.documentElement;
+export const getEffectiveTheme = (theme) => {
+    if (theme === 'system' || !theme) {
+        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return systemPrefersDark ? 'dark' : 'light';
+    }
+    return theme;
+};
+
+export const applyTheme = (theme, animate = false) => {
+    const effectiveTheme = getEffectiveTheme(theme);
+    const root = document.documentElement;
     const bodyEl = document.body;
-    if (theme === 'dark') {
+
+    if (effectiveTheme === 'dark') {
         root.classList.add('dark-mode');
         bodyEl.classList.add('dark-mode');
-        if (themeToggle) themeToggle.textContent = '☀️';
         updateThemeColor('#080e1a', animate);
     } else {
         root.classList.remove('dark-mode');
         bodyEl.classList.remove('dark-mode');
-        if (themeToggle) themeToggle.textContent = '🌙';
         updateThemeColor('#f0f2ff', animate);
     }
+
+    // UIボタンの状態更新
+    const themeButtons = document.querySelectorAll('.theme-option-btn');
+    themeButtons.forEach(btn => {
+        if (btn.dataset.theme === theme) {
+            btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
+        } else {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-pressed', 'false');
+        }
+    });
 };
 
-export const initTheme = (themeToggle) => {
-    const savedTheme       = localStorage.getItem('theme');
-    const systemPrefersDark= window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme     = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-    
-    applyTheme(initialTheme, themeToggle, false);
+export const initTheme = () => {
+    const savedTheme = localStorage.getItem('theme') || 'system';
 
-    themeToggle.addEventListener('click', () => {
-        const isDark   = document.body.classList.contains('dark-mode');
-        const newTheme = isDark ? 'light' : 'dark';
-        document.documentElement.classList.add('theme-transition');
-        
-        applyTheme(newTheme, themeToggle, true);
-        
-        localStorage.setItem('theme', newTheme);
-        window.setTimeout(() => {
-            document.documentElement.classList.remove('theme-transition');
-        }, 420);
+    // システムのテーマ変更監視
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleSystemThemeChange = () => {
+        const currentSaved = localStorage.getItem('theme') || 'system';
+        if (currentSaved === 'system') {
+            document.documentElement.classList.add('theme-transition');
+            applyTheme('system', true);
+            window.setTimeout(() => {
+                document.documentElement.classList.remove('theme-transition');
+            }, 420);
+        }
+    };
+
+    if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleSystemThemeChange);
+    } else if (mediaQuery.addListener) {
+        mediaQuery.addListener(handleSystemThemeChange);
+    }
+
+    applyTheme(savedTheme, false);
+
+    // イベント委譲またはボタン一律登録
+    const themeButtons = document.querySelectorAll('.theme-option-btn');
+    themeButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const selectedTheme = e.currentTarget.dataset.theme;
+            document.documentElement.classList.add('theme-transition');
+
+            localStorage.setItem('theme', selectedTheme);
+            applyTheme(selectedTheme, true);
+
+            window.setTimeout(() => {
+                document.documentElement.classList.remove('theme-transition');
+            }, 420);
+        });
     });
 };

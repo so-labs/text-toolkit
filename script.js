@@ -1,4 +1,4 @@
-﻿import { showToast } from './modules/toast.js';
+import { showToast } from './modules/toast.js';
 import { initTheme } from './modules/theme.js';
 import { CookieUtils, Utils } from './modules/utils.js';
 import { converters } from './modules/converters.js';
@@ -15,8 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const outputText = document.getElementById('outputText');
     const pasteButton = document.getElementById('pasteButton');
     const pasteAndConvertButton = document.getElementById('pasteAndConvertButton');
-    const themeToggle = document.getElementById('themeToggle');
+    const settingsToggle = document.getElementById('settingsToggle');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+    const debugToggle = document.getElementById('debugToggle');
     const bubbleToggle = document.getElementById('bubbleToggle');
+    const bubbleSettingGroup = document.getElementById('bubbleSettingGroup');
     const consentModal = document.getElementById('consentModal');
     const consentApproveBtn = document.getElementById('consentApproveBtn');
     const consentCancelBtn = document.getElementById('consentCancelBtn');
@@ -29,10 +33,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelAiContainer = document.getElementById('cancelAiContainer');
     const cancelAiButton = document.getElementById('cancelAiButton');
 
-    // ── Dark Mode ─────────────────────────────────────────────────────────────
-    initTheme(themeToggle);
+    // ── Settings Menu Toggle ──────────────────────────────────────────────────
+    const toggleSettingsMenu = (show) => {
+        if (!settingsMenu) return;
+        const isHidden = settingsMenu.classList.contains('hidden');
+        const shouldShow = show !== undefined ? show : isHidden;
+        if (shouldShow) {
+            settingsMenu.classList.remove('hidden');
+            settingsToggle?.setAttribute('aria-expanded', 'true');
+        } else {
+            settingsMenu.classList.add('hidden');
+            settingsToggle?.setAttribute('aria-expanded', 'false');
+        }
+    };
 
-    // ── Bubble Mode ───────────────────────────────────────────────────────────
+    settingsToggle?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSettingsMenu();
+    });
+
+    settingsCloseBtn?.addEventListener('click', () => {
+        toggleSettingsMenu(false);
+    });
+
+    settingsMenu?.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    document.addEventListener('click', () => {
+        toggleSettingsMenu(false);
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            toggleSettingsMenu(false);
+        }
+    });
+
+    // ── Dark / System Theme ───────────────────────────────────────────────────
+    initTheme();
+
+    // ── Debug & Bubble Mode ───────────────────────────────────────────────────
+    let isDebugMode = localStorage.getItem('debugMode') === 'true';
+    if (debugToggle) {
+        debugToggle.checked = isDebugMode;
+    }
+
     const isPwa = () => {
         return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     };
@@ -76,6 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btnTitle) btnTitle.textContent = '変換してコピー';
             if (btnSub) btnSub.textContent = '入力内容を変換';
         }
+        if (bubbleToggle) {
+            bubbleToggle.checked = isBubble;
+        }
     };
 
     // バブルモードの自動判定ロジック
@@ -93,9 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const appW = window.innerWidth;
         const appH = window.innerHeight;
 
-        // 全画面起動時、横幅は物理画面幅と等しい (appW === screenW)
-        // バブル（フローティング）の場合、左右に余白があるため appW < screenW になる
-        // 閾値を0.98 (98%) とし、「少しでも余白があればバブル」と判定する
         const widthRatio = appW / screenW;
         const heightRatio = appH / screenH;
 
@@ -110,28 +156,45 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBubbleModeUI(detectBubbleState());
     };
 
-    const initBubbleMode = async () => {
-        if (!isPwa()) return;
+    let isPwaAndAndroid17 = false;
 
-        const android17Plus = await checkAndroid17OrAbove();
-        if (!android17Plus) return;
-
-        // PWA かつ Android 17以上の場合のみ有効化
-        bubbleToggle?.classList.remove('hidden');
-
-        // 画面サイズが確定するのを少し待ってから判定（Android起動直後のサイズズレ対策）
-        setTimeout(applyBubbleModeAuto, 150);
-
-        window.addEventListener('resize', () => {
-            setTimeout(applyBubbleModeAuto, 150);
-        });
-
-        bubbleToggle?.addEventListener('click', () => {
-            manualBubbleOverride = true; // 手動で切り替えた場合は自動判定を上書き（固定）
-            const isBubble = !document.body.classList.contains('bubble-mode');
-            updateBubbleModeUI(isBubble);
-        });
+    const checkBubbleVisibility = () => {
+        const shouldShowBubble = isDebugMode || isPwaAndAndroid17;
+        if (shouldShowBubble) {
+            bubbleSettingGroup?.classList.remove('hidden');
+        } else {
+            bubbleSettingGroup?.classList.add('hidden');
+            if (document.body.classList.contains('bubble-mode')) {
+                updateBubbleModeUI(false);
+            }
+        }
     };
+
+    const initBubbleMode = async () => {
+        const pwa = isPwa();
+        const android17Plus = pwa ? await checkAndroid17OrAbove() : false;
+        isPwaAndAndroid17 = pwa && android17Plus;
+
+        checkBubbleVisibility();
+
+        if (isPwaAndAndroid17) {
+            setTimeout(applyBubbleModeAuto, 150);
+            window.addEventListener('resize', () => {
+                setTimeout(applyBubbleModeAuto, 150);
+            });
+        }
+    };
+
+    debugToggle?.addEventListener('change', (e) => {
+        isDebugMode = e.target.checked;
+        localStorage.setItem('debugMode', isDebugMode ? 'true' : 'false');
+        checkBubbleVisibility();
+    });
+
+    bubbleToggle?.addEventListener('change', (e) => {
+        manualBubbleOverride = true;
+        updateBubbleModeUI(e.target.checked);
+    });
 
     initBubbleMode();
 

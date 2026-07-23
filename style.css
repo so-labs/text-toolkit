@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Design System – CSS Custom Properties
    ============================================================ */
 :root {
@@ -651,12 +651,16 @@ textarea {
 }
 
 /* ============================================================
-   Theme Toggle
+   Settings Menu & Toggles
    ============================================================ */
-.theme-toggle,
-.bubble-toggle {
+.settings-wrapper {
     position: fixed;
     top: 16px;
+    right: 16px;
+    z-index: 1000;
+}
+
+.settings-toggle {
     width: 42px;
     height: 42px;
     border-radius: 50%;
@@ -668,7 +672,6 @@ textarea {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 1000;
     color: var(--c-text);
     padding: 0;
     transition:
@@ -676,27 +679,205 @@ textarea {
         border-color var(--t-mid),
         box-shadow var(--t-mid),
         transform var(--t-fast);
-
-    &:hover {
-        transform: rotate(12deg) scale(1.08);
-        box-shadow: var(--shadow-md);
-    }
-
-    &:active {
-        transform: scale(0.95);
-    }
 }
 
-.theme-toggle {
-    right: 16px;
+.settings-toggle:hover {
+    transform: rotate(30deg) scale(1.08);
+    box-shadow: var(--shadow-md);
 }
 
-.bubble-toggle {
-    right: 68px;
+.settings-toggle:active {
+    transform: scale(0.95);
 }
 
-.bubble-toggle.hidden {
+/* 設定ドロップダウンメニュー */
+.settings-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 290px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: var(--sp-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-md);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 1001;
+}
+
+.settings-menu.hidden {
     display: none;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--sp-xs);
+    border-bottom: 1px solid var(--c-border-subtle);
+}
+
+.settings-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--c-text-heading);
+}
+
+.settings-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 0.9rem;
+    color: var(--c-text-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: color var(--t-fast), background var(--t-fast);
+}
+
+.settings-close-btn:hover {
+    color: var(--c-text);
+    background: var(--c-border-subtle);
+}
+
+.settings-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-md);
+}
+
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.settings-group.hidden {
+    display: none;
+}
+
+.settings-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--c-text-muted);
+}
+
+/* セグメンテッドコントロール (テーマ切り替え) */
+.theme-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    background: var(--c-bg-subtle);
+    padding: 3px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--c-border-subtle);
+}
+
+.theme-option-btn {
+    border: none;
+    background: transparent;
+    color: var(--c-text-muted);
+    padding: 6px 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--t-fast);
+    white-space: nowrap;
+    text-align: center;
+}
+
+.theme-option-btn:hover {
+    color: var(--c-text);
+}
+
+.theme-option-btn.active {
+    background: var(--c-surface);
+    color: var(--c-primary);
+    box-shadow: var(--shadow-sm);
+    font-weight: 700;
+}
+
+/* 行形式の設定項目 (デバッグ・バブルモード) */
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.settings-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settings-item-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--c-text);
+}
+
+.settings-item-desc {
+    font-size: 0.72rem;
+    color: var(--c-text-muted);
+    line-height: 1.2;
+}
+
+/* トグルスイッチ */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--c-border);
+    transition: var(--t-fast);
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: var(--t-fast);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--c-primary);
+}
+
+.toggle-switch input:focus-visible + .toggle-slider {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 2px;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(20px);
 }
 
 /* バブルモード時のボディー・レイアウト調整用クラス */
@@ -978,18 +1159,17 @@ body.bubble-mode .app-footer {
         padding: 12px 14px;
     }
 
-    .theme-toggle,
-    .bubble-toggle {
+    .settings-wrapper {
         top: 12px;
+        right: 12px;
+    }
+    .settings-toggle {
         width: 38px;
         height: 38px;
         font-size: 1.1rem;
     }
-    .theme-toggle {
-        right: 12px;
-    }
-    .bubble-toggle {
-        right: 56px; /* 12px + 38px + 6px */
+    .settings-menu {
+        width: 270px;
     }
 }
 

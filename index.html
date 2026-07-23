@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 
 <head>
@@ -20,11 +20,15 @@
     <script>
         (function () {
             try {
-                var saved = localStorage.getItem('theme');
-                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var theme = saved || (prefersDark ? 'dark' : 'light');
+                var saved = localStorage.getItem('theme') || 'system';
+                var isDark = false;
+                if (saved === 'dark') {
+                    isDark = true;
+                } else if (saved === 'system') {
+                    isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
                 var metaThemeColor = document.getElementById('theme-color-meta');
-                if (theme === 'dark') {
+                if (isDark) {
                     document.documentElement.classList.add('dark-mode');
                     if (metaThemeColor) metaThemeColor.setAttribute('content', '#080e1a');
                 } else {
@@ -39,10 +43,57 @@
     <!-- トースト通知コンテナ -->
     <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-    <!-- テーマトグル -->
-    <button id="themeToggle" class="theme-toggle" aria-label="テーマ切り替え">🌙</button>
-    <!-- バブルトグル (PWA時のみJSで表示) -->
-    <button id="bubbleToggle" class="bubble-toggle hidden" aria-label="バブルモード切り替え">🫧</button>
+    <!-- 設定メニュー -->
+    <div class="settings-wrapper">
+        <button id="settingsToggle" class="settings-toggle" aria-label="設定メニュー" aria-expanded="false" title="設定">⚙️</button>
+
+        <div id="settingsMenu" class="settings-menu hidden" role="dialog" aria-label="設定メニュー">
+            <div class="settings-header">
+                <span class="settings-title">⚙️ 設定</span>
+                <button id="settingsCloseBtn" class="settings-close-btn" aria-label="閉じる">✕</button>
+            </div>
+
+            <div class="settings-body">
+                <!-- テーマ切り替え -->
+                <div class="settings-group">
+                    <label class="settings-label">テーマ</label>
+                    <div class="theme-options" id="themeOptions">
+                        <button type="button" class="theme-option-btn" data-theme="light">☀️ ライト</button>
+                        <button type="button" class="theme-option-btn" data-theme="dark">🌙 ダーク</button>
+                        <button type="button" class="theme-option-btn" data-theme="system">💻 システム</button>
+                    </div>
+                </div>
+
+                <!-- デバッグモード -->
+                <div class="settings-group">
+                    <div class="settings-row">
+                        <div class="settings-info">
+                            <span class="settings-item-title">デバッグモード</span>
+                            <span class="settings-item-desc">動作検証・デバッグ用の拡張設定</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="debugToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- バブルモード (条件一致時またはデバッグモード時に表示) -->
+                <div class="settings-group hidden" id="bubbleSettingGroup">
+                    <div class="settings-row">
+                        <div class="settings-info">
+                            <span class="settings-item-title">バブルモード 🫧</span>
+                            <span class="settings-item-desc">フローティング表示でクイック変換</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="bubbleToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="app-wrapper">
         <!-- ヘッダー -->
