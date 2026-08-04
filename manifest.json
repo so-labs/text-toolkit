@@ -1,5 +1,5 @@
-{
-  "name": "テキスト変換ツール",
+﻿{
+  "name": "TextToolkit",
   "short_name": "TextToolkit",
   "description": "テキストの変換・整形・エンコードを簡単に行えるツール",
   "start_url": "./",

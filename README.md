@@ -1,4 +1,4 @@
-﻿# text-toolkit
+﻿# TextToolkit
 
 多用途なウェブベースのテキスト整形・変換ツールです。
 
