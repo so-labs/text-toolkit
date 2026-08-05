@@ -44,6 +44,7 @@ export const converters = {
     codeBlockMarkdown: (text) => Utils.createCodeBlock('markdown', text),
     codeBlockPython:   (text) => Utils.createCodeBlock('python', text),
     codeBlockJs:       (text) => Utils.createCodeBlock('javascript', text),
+    codeBlockPlaintext: (text) => Utils.createCodeBlock('plaintext', text),
     codeBlockGeneric:  (text) => Utils.createCodeBlock('', text),
     newlinesToSlash:   (text) => text.replace(/\n/g, ' / '),
     newlinesToSpace:   (text) => text.replace(/\n/g, ' '),
