@@ -1,4 +1,4 @@
-import { showToast } from './modules/toast.js';
+﻿import { showToast } from './modules/toast.js';
 import { initTheme } from './modules/theme.js';
 import { CookieUtils, Utils } from './modules/utils.js';
 import { converters } from './modules/converters.js';
@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const debugToggle = document.getElementById('debugToggle');
     const bubbleToggle = document.getElementById('bubbleToggle');
     const bubbleSettingGroup = document.getElementById('bubbleSettingGroup');
+    const versionInfoGroup = document.getElementById('versionInfoGroup');
+    const appVersionDisplay = document.getElementById('appVersionDisplay');
     const consentModal = document.getElementById('consentModal');
     const consentApproveBtn = document.getElementById('consentApproveBtn');
     const consentCancelBtn = document.getElementById('consentCancelBtn');
@@ -72,6 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Dark / System Theme ───────────────────────────────────────────────────
     initTheme();
+
+    // ── App Version ───────────────────────────────────────────────────────────
+    Utils.getAppVersion().then(version => {
+        if (appVersionDisplay) {
+            appVersionDisplay.textContent = `Ver ${version}`;
+        }
+    });
 
     // ── Debug & Bubble Mode ───────────────────────────────────────────────────
     let isDebugMode = localStorage.getItem('debugMode') === 'true';
@@ -167,6 +176,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (document.body.classList.contains('bubble-mode')) {
                 updateBubbleModeUI(false);
             }
+        }
+
+        if (isDebugMode) {
+            versionInfoGroup?.classList.remove('hidden');
+        } else {
+            versionInfoGroup?.classList.add('hidden');
         }
     };
 

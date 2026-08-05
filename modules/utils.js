@@ -28,5 +28,23 @@ export const Utils = {
         const tickCount = Math.max(3, maxTicks + 1);
         const fence     = '`'.repeat(tickCount);
         return `${fence}${lang}\n${text}\n${fence}`;
+    },
+    getAppVersion: async (swPath = './sw.js') => {
+        try {
+            // ブラウザの強力なキャッシュを回避して最新の sw.js を読み込む
+            const response = await fetch(swPath, { cache: 'no-store' });
+            if (!response.ok) return 'Unknown';
+
+            const text = await response.text();
+            // 例: const CACHE_NAME = 'text-toolkit-2026.08-r1';
+            const match = text.match(/CACHE_NAME\s*=\s*['"]text-toolkit-(.+?)['"]/);
+
+            if (match && match[1]) {
+                return match[1];
+            }
+        } catch (e) {
+            console.warn('Failed to fetch app version from sw.js:', e);
+        }
+        return 'Unknown';
     }
 };
