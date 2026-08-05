@@ -83,9 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Debug & Bubble Mode ───────────────────────────────────────────────────
-    let isDebugMode = localStorage.getItem('debugMode') === 'true';
+    let isDebugModeEnabled = localStorage.getItem('debugMode') === 'true';
     if (debugToggle) {
-        debugToggle.checked = isDebugMode;
+        debugToggle.checked = isDebugModeEnabled;
     }
 
     const isPwa = () => {
@@ -165,10 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBubbleModeUI(detectBubbleState());
     };
 
-    let isPwaAndAndroid17 = false;
+    let isBubbleModeSupported = false;
 
-    const checkBubbleVisibility = () => {
-        const shouldShowBubble = isDebugMode || isPwaAndAndroid17;
+    const updateSettingsVisibility = () => {
+        const shouldShowBubble = isDebugModeEnabled || isBubbleModeSupported;
         if (shouldShowBubble) {
             bubbleSettingGroup?.classList.remove('hidden');
         } else {
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (isDebugMode) {
+        if (isDebugModeEnabled) {
             versionInfoGroup?.classList.remove('hidden');
         } else {
             versionInfoGroup?.classList.add('hidden');
@@ -188,11 +188,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const initBubbleMode = async () => {
         const pwa = isPwa();
         const android17Plus = pwa ? await checkAndroid17OrAbove() : false;
-        isPwaAndAndroid17 = pwa && android17Plus;
+        isBubbleModeSupported = pwa && android17Plus;
 
-        checkBubbleVisibility();
+        updateSettingsVisibility();
 
-        if (isPwaAndAndroid17) {
+        if (isBubbleModeSupported) {
             setTimeout(applyBubbleModeAuto, 150);
             window.addEventListener('resize', () => {
                 setTimeout(applyBubbleModeAuto, 150);
@@ -201,9 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     debugToggle?.addEventListener('change', (e) => {
-        isDebugMode = e.target.checked;
-        localStorage.setItem('debugMode', isDebugMode ? 'true' : 'false');
-        checkBubbleVisibility();
+        isDebugModeEnabled = e.target.checked;
+        localStorage.setItem('debugMode', isDebugModeEnabled ? 'true' : 'false');
+        updateSettingsVisibility();
     });
 
     bubbleToggle?.addEventListener('change', (e) => {

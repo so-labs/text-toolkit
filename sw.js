@@ -6,7 +6,7 @@
  * MM   = 月（01〜12）
  * rN   = その月のリリース回数
  */
-const CACHE_NAME = 'text-toolkit-2026.08-r1';
+const CACHE_NAME = 'text-toolkit-2026.08-r2';
 const ASSETS = [
   './',
   './index.html',
