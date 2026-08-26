@@ -1,8 +1,9 @@
-﻿import { showToast } from './modules/toast.js';
+import { showToast } from './modules/toast.js';
 import { initTheme } from './modules/theme.js';
 import { CookieUtils, Utils } from './modules/utils.js';
 import { converters } from './modules/converters.js';
 import { AIService } from './modules/ai-service.js';
+import { t, getLanguage, setLanguage, applyTranslations } from './modules/i18n.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // ── State ───────────────────────────────────────────────────────────────
@@ -82,6 +83,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ── i18n (言語切替) ────────────────────────────────────────────────────────
+    const langButtons = document.querySelectorAll('.lang-option-btn');
+
+    const syncLangButtonUI = (lang) => {
+        langButtons.forEach(btn => {
+            if (btn.dataset.lang === lang) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
+            } else {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
+            }
+        });
+    };
+
+    const refreshSelectedBadgeText = () => {
+        const selectedTile = document.querySelector('.tile.selected');
+        if (selectedTile && selectedBadgeText) {
+            const label = getTileLabel(selectedTile);
+            const icon = selectedTile.querySelector('.tile-icon')?.textContent || '';
+            selectedBadgeText.textContent = `${icon} ${label}`;
+        }
+    };
+
+    const applyLang = (lang) => {
+        setLanguage(lang);
+        applyTranslations(document);
+        syncLangButtonUI(lang);
+        refreshSelectedBadgeText();
+        updateBubbleModeUI(document.body.classList.contains('bubble-mode'));
+    };
+
+    // 初期状態の反映
+    const currentLang = getLanguage();
+    syncLangButtonUI(currentLang);
+    applyTranslations(document);
+
+    // 言語ボタンのクリックハンドラ
+    langButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            applyLang(btn.dataset.lang);
+        });
+    });
+
     // ── Debug & Bubble Mode ───────────────────────────────────────────────────
     let isDebugModeEnabled = localStorage.getItem('debugMode') === 'true';
     if (debugToggle) {
@@ -124,12 +169,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnSub = convertAndCopyButton.querySelector('.btn-sub');
         if (isBubble) {
             document.body.classList.add('bubble-mode');
-            if (btnTitle) btnTitle.textContent = '変換';
-            if (btnSub) btnSub.textContent = 'クリップボードを直接変換';
+            if (btnTitle) btnTitle.textContent = t('bubble.convert');
+            if (btnSub) btnSub.textContent = t('bubble.convertSub');
         } else {
             document.body.classList.remove('bubble-mode');
-            if (btnTitle) btnTitle.textContent = '変換してコピー';
-            if (btnSub) btnSub.textContent = '入力内容を変換';
+            if (btnTitle) btnTitle.textContent = t('action.convertAndCopy.title');
+            if (btnSub) btnSub.textContent = t('action.convertAndCopy.sub');
         }
         if (bubbleToggle) {
             bubbleToggle.checked = isBubble;
@@ -349,9 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!outputText.value) return;
         try {
             await navigator.clipboard.writeText(outputText.value);
-            showToast('クリップボードにコピーしました！', 'success');
+            showToast(t('toast.copySuccess'), 'success');
         } catch {
-            showToast('コピーに失敗しました。手動でコピーしてください。', 'error');
+            showToast(t('toast.copyFailed'), 'error');
         }
     });
 
@@ -387,11 +432,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const btnTitle = convertAndCopyButton.querySelector('.btn-title');
             const btnSub = convertAndCopyButton.querySelector('.btn-sub');
             if (busy) {
-                if (btnTitle) btnTitle.textContent = '変換中...';
-                if (btnSub) btnSub.textContent = '処理が終わるまでお待ちください';
+                if (btnTitle) btnTitle.textContent = t('bubble.converting');
+                if (btnSub) btnSub.textContent = t('bubble.convertingSub');
             } else {
-                if (btnTitle) btnTitle.textContent = '変換';
-                if (btnSub) btnSub.textContent = 'クリップボードを直接変換';
+                if (btnTitle) btnTitle.textContent = t('bubble.convert');
+                if (btnSub) btnSub.textContent = t('bubble.convertSub');
             }
         }
 
@@ -408,22 +453,22 @@ document.addEventListener('DOMContentLoaded', () => {
         outputText.value = text;
         try {
             await navigator.clipboard.writeText(text);
-            showToast('変換結果をクリップボードにコピーしました！', 'success');
+            showToast(t('toast.convertCopySuccess'), 'success');
         } catch {
             // フォールバック
             try {
                 outputText.select();
                 document.execCommand('copy');
-                showToast('変換結果をクリップボードにコピーしました！', 'success');
+                showToast(t('toast.convertCopySuccess'), 'success');
             } catch {
-                showToast('コピーに失敗しました。手動でコピーしてください。', 'error', 5000);
+                showToast(t('toast.convertCopyFailed'), 'error', 5000);
             }
         }
     };
 
     const runConversion = async () => {
         if (!conversionType.value) {
-            showToast('変換機能を選択してください。', 'warning');
+            showToast(t('toast.selectConversion'), 'warning');
             // 選択エリアへスクロール
             document.getElementById('conversionPicker')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             return;
@@ -436,12 +481,12 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 textToConvert = await navigator.clipboard.readText();
                 if (!textToConvert) {
-                    showToast('クリップボードが空です。', 'warning');
+                    showToast(t('toast.clipboardEmpty'), 'warning');
                     return;
                 }
                 textToConvert = Utils.normalizeNewlines(textToConvert);
             } catch {
-                showToast('クリップボードからの読み取りに失敗しました。', 'error');
+                showToast(t('toast.clipboardReadFailed'), 'error');
                 return;
             }
         } else {
@@ -467,9 +512,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setButtonsBusy(true, needsAiProcessing);
 
         if (needsAiProcessing) {
-            outputText.value = '🤖 AIが処理中…';
+            outputText.value = t('error.aiProcessing');
             if (isBubble) {
-                showToast('AI処理を開始しました…', 'info');
+                showToast(t('toast.aiProcessing'), 'info');
             }
         }
 
@@ -498,14 +543,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (err.name === 'AbortError' || signal.aborted) {
                 const reason = activeAbortController?.signal?.reason || 'user';
                 if (reason === 'timeout') {
-                    showToast('AI処理がタイムアウトしました。', 'warning');
+                    showToast(t('toast.aiTimeout'), 'warning');
                 } else {
-                    showToast('AI処理をキャンセルしました。', 'info');
+                    showToast(t('toast.aiCancelled'), 'info');
                 }
                 outputText.value = '';
             } else {
                 console.error('変換またはコピーに失敗しました:', err);
-                outputText.value = '【エラー】変換またはコピーに失敗しました。\n\n' + textToConvert;
+                outputText.value = t('error.conversionFailed') + '\n\n' + textToConvert;
                 throw err;
             }
         } finally {
@@ -522,9 +567,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const clipboardText = await navigator.clipboard.readText();
             inputText.value = clipboardText;
-            showToast('クリップボードからテキストを貼り付けました！', 'info');
+            showToast(t('toast.pasteSuccess'), 'info');
         } catch {
-            showToast('クリップボードからの貼り付けに失敗しました。ブラウザのセキュリティ設定を確認するか、手動で貼り付けてください。', 'error', 5000);
+            showToast(t('toast.pasteFailed'), 'error', 5000);
         }
     });
 
@@ -536,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await runConversion();
         } catch (err) {
             console.error('貼り付けと変換に失敗しました:', err);
-            showToast('貼り付けと変換に失敗しました。ブラウザのセキュリティ設定を確認してください。', 'error', 5000);
+            showToast(t('toast.pasteConvertFailed'), 'error', 5000);
             setButtonsBusy(false);
         }
     });
@@ -547,7 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await runConversion();
         } catch (err) {
             console.error('変換に失敗しました:', err);
-            showToast('変換に失敗しました。', 'error');
+            showToast(t('toast.convertFailed'), 'error');
             setButtonsBusy(false);
         }
     });

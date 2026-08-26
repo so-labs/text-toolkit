@@ -1,5 +1,6 @@
-﻿import { AIService } from './ai-service.js';
+import { AIService } from './ai-service.js';
 import { Utils } from './utils.js';
+import { t } from './i18n.js';
 
 export const converters = {
     adjustKagikakko: (text) => {
@@ -68,11 +69,11 @@ export const converters = {
     base64Encode: (text) => btoa(unescape(encodeURIComponent(text))),
     base64Decode: (text) => {
         try { return decodeURIComponent(escape(atob(text))); }
-        catch { return '【エラー】有効なBase64文字列ではありません'; }
+        catch { return t('error.base64Invalid'); }
     },
     urlEncode: (text) => encodeURIComponent(text),
     urlDecode: (text) => {
         try { return decodeURIComponent(text); }
-        catch { return '【エラー】有効なURLエンコード文字列ではありません'; }
+        catch { return t('error.urlEncodeInvalid'); }
     }
 };

@@ -765,10 +765,20 @@ textarea {
     color: var(--c-text-muted);
 }
 
-/* セグメンテッドコントロール (テーマ切り替え) */
+/* セグメンテッドコントロール (テーマ・言語切り替え) */
 .theme-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    background: var(--c-bg-subtle);
+    padding: 3px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--c-border-subtle);
+}
+
+.lang-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 4px;
     background: var(--c-bg-subtle);
     padding: 3px;

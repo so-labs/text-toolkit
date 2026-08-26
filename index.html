@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 
 <head>
@@ -20,6 +20,10 @@
     <script>
         (function () {
             try {
+                // 言語の早期適用（チラつき防止）
+                var lang = localStorage.getItem('app-lang') || (navigator.language && navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en');
+                document.documentElement.setAttribute('lang', lang);
+
                 var saved = localStorage.getItem('theme') || 'system';
                 var isDark = false;
                 if (saved === 'dark') {
@@ -45,22 +49,39 @@
 
     <!-- 設定メニュー -->
     <div class="settings-wrapper">
-        <button id="settingsToggle" class="settings-toggle" aria-label="設定メニュー" aria-expanded="false" title="設定">⚙️</button>
+        <button id="settingsToggle" class="settings-toggle" aria-label="設定メニュー" data-i18n-aria="settings.toggle"
+            aria-expanded="false" title="設定" data-i18n-title="settings.toggle">⚙️</button>
 
-        <div id="settingsMenu" class="settings-menu hidden" role="dialog" aria-label="設定メニュー">
+        <div id="settingsMenu" class="settings-menu hidden" role="dialog" aria-label="設定メニュー"
+            data-i18n-aria="settings.toggle">
             <div class="settings-header">
-                <span class="settings-title">⚙️ 設定</span>
-                <button id="settingsCloseBtn" class="settings-close-btn" aria-label="閉じる">✕</button>
+                <span class="settings-title" data-i18n="settings.title">⚙️ 設定</span>
+                <button id="settingsCloseBtn" class="settings-close-btn" aria-label="閉じる"
+                    data-i18n-aria="settings.close">✕</button>
             </div>
 
             <div class="settings-body">
+                <!-- 言語切り替え -->
+                <div class="settings-group">
+                    <label class="settings-label" data-i18n="settings.lang">言語</label>
+                    <div class="settings-item-desc" style="margin-bottom: 8px;" data-i18n="settings.langDesc">表示言語の切り替え
+                    </div>
+                    <div class="lang-options" id="langOptions">
+                        <button type="button" class="theme-option-btn lang-option-btn" data-lang="ja">日本語</button>
+                        <button type="button" class="theme-option-btn lang-option-btn" data-lang="en">English</button>
+                    </div>
+                </div>
+
                 <!-- テーマ切り替え -->
                 <div class="settings-group">
-                    <label class="settings-label">テーマ</label>
+                    <label class="settings-label" data-i18n="settings.theme">テーマ</label>
                     <div class="theme-options" id="themeOptions">
-                        <button type="button" class="theme-option-btn" data-theme="light">☀️ ライト</button>
-                        <button type="button" class="theme-option-btn" data-theme="dark">🌙 ダーク</button>
-                        <button type="button" class="theme-option-btn" data-theme="system">💻 システム</button>
+                        <button type="button" class="theme-option-btn" data-theme="light"
+                            data-i18n="settings.themeLightBtn">☀️ ライト</button>
+                        <button type="button" class="theme-option-btn" data-theme="dark"
+                            data-i18n="settings.themeDarkBtn">🌙 ダーク</button>
+                        <button type="button" class="theme-option-btn" data-theme="system"
+                            data-i18n="settings.themeSystemBtn">💻 システム</button>
                     </div>
                 </div>
 
@@ -68,8 +89,8 @@
                 <div class="settings-group">
                     <div class="settings-row">
                         <div class="settings-info">
-                            <span class="settings-item-title">デバッグモード</span>
-                            <span class="settings-item-desc">動作検証・デバッグ用の拡張設定</span>
+                            <span class="settings-item-title" data-i18n="settings.debugMode">デバッグモード</span>
+                            <span class="settings-item-desc" data-i18n="settings.debugModeDesc">動作検証・デバッグ用の拡張設定</span>
                         </div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="debugToggle">
@@ -82,8 +103,8 @@
                 <div class="settings-group hidden" id="bubbleSettingGroup">
                     <div class="settings-row">
                         <div class="settings-info">
-                            <span class="settings-item-title">バブルモード 🫧</span>
-                            <span class="settings-item-desc">フローティング表示でクイック変換</span>
+                            <span class="settings-item-title" data-i18n="settings.bubbleMode">バブルモード 🫧</span>
+                            <span class="settings-item-desc" data-i18n="settings.bubbleModeDesc">フローティング表示でクイック変換</span>
                         </div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="bubbleToggle">
@@ -95,7 +116,8 @@
                 <!-- バージョン情報 (デバッグモード時に表示) -->
                 <div class="settings-group hidden" id="versionInfoGroup">
                     <div class="settings-row" style="justify-content: center; margin-top: 8px;">
-                        <span class="settings-item-desc" id="appVersionDisplay" style="font-family: var(--font-mono); opacity: 0.7;">Ver ---</span>
+                        <span class="settings-item-desc" id="appVersionDisplay"
+                            style="font-family: var(--font-mono); opacity: 0.7;">Ver ---</span>
                     </div>
                 </div>
             </div>
@@ -107,7 +129,7 @@
         <header class="app-header">
             <div class="header-icon">✦</div>
             <h1>TextToolkit</h1>
-            <p class="header-subtitle">シンプルで使いやすいテキスト整形・変換ツール</p>
+            <p class="header-subtitle" data-i18n="header.subtitle">シンプルで使いやすいテキスト整形・変換ツール</p>
         </header>
 
         <!-- メインカード -->
@@ -116,193 +138,201 @@
             <!-- 入力エリア -->
             <section class="section" id="inputTextSection">
                 <label class="field-label" for="inputText">
-                    <span class="label-icon">✏️</span> 変換したいテキスト
+                    <span class="label-icon">✏️</span> <span data-i18n="input.label">変換したいテキスト</span>
                 </label>
                 <div class="textarea-wrapper">
-                    <textarea id="inputText" rows="7" placeholder="ここにテキストを入力してください…"></textarea>
+                    <textarea id="inputText" rows="7" placeholder="ここにテキストを入力してください…"
+                        data-i18n-placeholder="input.placeholder"></textarea>
                     <button id="clearInputButton" class="textarea-clear-btn" aria-label="クリア"
-                        title="テキストをクリア">✕</button>
+                        data-i18n-aria="input.clearAria" title="テキストをクリア" data-i18n-title="input.clearTitle">✕</button>
                 </div>
             </section>
 
             <!-- 変換機能選択 -->
             <section class="section">
                 <div class="field-label">
-                    <span class="label-icon">⚡</span> 変換機能を選択
+                    <span class="label-icon">⚡</span> <span data-i18n="conversion.label">変換機能を選択</span>
                 </div>
 
                 <!-- hidden select (値の保持用) -->
-                <select id="conversionType" class="hidden-select" aria-label="変換タイプ">
-                    <option value="" disabled selected hidden>変換機能を選択してください</option>
-                    <option value="codeBlockAuto">言語自動判定 (コードブロック)</option>
-                    <option value="tableFormatter">テーブル整形 (Markdown)</option>
-                    <option value="codeBlockMarkdown">コードブロック (markdown)</option>
-                    <option value="codeBlockJs">コードブロック (javascript)</option>
-                    <option value="codeBlockPython">コードブロック (python)</option>
-                    <option value="codeBlockPlaintext">コードブロック (plaintext)</option>
-                    <option value="codeBlockGeneric">コードブロック (汎用)</option>
-                    <option value="markdownGeminiFix">Markdown修正 (Gemini用)</option>
-                    <option value="geminiNewlineFix">Gemini改行修正</option>
-                    <option value="adjustKagikakko">括弧のネスト自動調整</option>
-                    <option value="markdownQuote">Markdown引用 (&gt;)</option>
-                    <option value="markdownBulletList">Markdown箇条書き (-)</option>
-                    <option value="markdownNumberedList">Markdown番号付きリスト</option>
-                    <option value="stripTrailingWhitespace">行末の空白削除</option>
-                    <option value="trimWhitespace">行頭の空白削除</option>
-                    <option value="spaceToFullwidth">半角スペース → 全角統一</option>
-                    <option value="spaceToHalfwidth">全角スペース → 半角統一</option>
-                    <option value="newlinesToSlash">改行 → " / " に変換</option>
-                    <option value="newlinesToSpace">改行 → 半角スペースに変換</option>
-                    <option value="base64Encode">Base64エンコード</option>
-                    <option value="base64Decode">Base64デコード</option>
-                    <option value="urlEncode">URLエンコード</option>
-                    <option value="urlDecode">URLデコード</option>
+                <select id="conversionType" class="hidden-select" aria-label="変換タイプ"
+                    data-i18n-aria="conversion.selectAria">
+                    <option value="" disabled selected hidden data-i18n="conversion.selectPlaceholder">変換機能を選択してください
+                    </option>
+                    <option value="codeBlockAuto" data-i18n="option.codeBlockAuto">言語自動判定 (コードブロック)</option>
+                    <option value="tableFormatter" data-i18n="option.tableFormatter">テーブル整形 (Markdown)</option>
+                    <option value="codeBlockMarkdown" data-i18n="option.codeBlockMarkdown">コードブロック (markdown)</option>
+                    <option value="codeBlockJs" data-i18n="option.codeBlockJs">コードブロック (javascript)</option>
+                    <option value="codeBlockPython" data-i18n="option.codeBlockPython">コードブロック (python)</option>
+                    <option value="codeBlockPlaintext" data-i18n="option.codeBlockPlaintext">コードブロック (plaintext)
+                    </option>
+                    <option value="codeBlockGeneric" data-i18n="option.codeBlockGeneric">コードブロック (汎用)</option>
+                    <option value="markdownGeminiFix" data-i18n="option.markdownGeminiFix">Markdown修正 (Gemini用)</option>
+                    <option value="geminiNewlineFix" data-i18n="option.geminiNewlineFix">Gemini改行修正</option>
+                    <option value="adjustKagikakko" data-i18n="option.adjustKagikakko">括弧のネスト自動調整</option>
+                    <option value="markdownQuote" data-i18n="option.markdownQuote">Markdown引用 (&gt;)</option>
+                    <option value="markdownBulletList" data-i18n="option.markdownBulletList">Markdown箇条書き (-)</option>
+                    <option value="markdownNumberedList" data-i18n="option.markdownNumberedList">Markdown番号付きリスト
+                    </option>
+                    <option value="stripTrailingWhitespace" data-i18n="option.stripTrailingWhitespace">行末の空白削除</option>
+                    <option value="trimWhitespace" data-i18n="option.trimWhitespace">行頭の空白削除</option>
+                    <option value="spaceToFullwidth" data-i18n="option.spaceToFullwidth">半角スペース → 全角統一</option>
+                    <option value="spaceToHalfwidth" data-i18n="option.spaceToHalfwidth">全角スペース → 半角統一</option>
+                    <option value="newlinesToSlash" data-i18n="option.newlinesToSlash">改行 → " / " に変換</option>
+                    <option value="newlinesToSpace" data-i18n="option.newlinesToSpace">改行 → 半角スペースに変換</option>
+                    <option value="base64Encode" data-i18n="option.base64Encode">Base64エンコード</option>
+                    <option value="base64Decode" data-i18n="option.base64Decode">Base64デコード</option>
+                    <option value="urlEncode" data-i18n="option.urlEncode">URLエンコード</option>
+                    <option value="urlDecode" data-i18n="option.urlDecode">URLデコード</option>
                 </select>
 
                 <!-- 変換機能タブナビゲーション -->
                 <div class="conversion-tabs" role="tablist" id="conversionTabs">
                     <button class="tab-btn active" role="tab" aria-selected="true" data-tab="ai">
                         <span class="tab-icon">🤖</span>
-                        <span class="tab-name">AI機能</span>
+                        <span class="tab-name" data-i18n="tab.ai">AI機能</span>
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" data-tab="codeblock">
                         <span class="tab-icon">💻</span>
-                        <span class="tab-name">コードブロック</span>
+                        <span class="tab-name" data-i18n="tab.codeblock">コードブロック</span>
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" data-tab="textformat">
                         <span class="tab-icon">✍️</span>
-                        <span class="tab-name">テキスト整形</span>
+                        <span class="tab-name" data-i18n="tab.textformat">テキスト整形</span>
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" data-tab="whitespace">
                         <span class="tab-icon">🔄</span>
-                        <span class="tab-name">空白・改行</span>
+                        <span class="tab-name" data-i18n="tab.whitespace">空白・改行</span>
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" data-tab="encode">
                         <span class="tab-icon">🔐</span>
-                        <span class="tab-name">エンコード</span>
+                        <span class="tab-name" data-i18n="tab.encode">エンコード</span>
                     </button>
                 </div>
 
                 <!-- カスタム変換タイルUI -->
                 <div class="conversion-picker" id="conversionPicker">
                     <div class="picker-group active" data-group="ai">
-                        <div class="picker-group-label">🤖 AI機能</div>
+                        <div class="picker-group-label" data-i18n="group.ai">🤖 AI機能</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="codeBlockAuto">
                                 <span class="tile-icon">🔍</span>
-                                <span class="tile-name">言語自動判定<small>(コードブロック)</small></span>
+                                <span class="tile-name"><span data-i18n="tile.codeBlockAuto">言語自動判定</span><small
+                                        data-i18n="tile.codeBlockAutoSub">(コードブロック)</small></span>
                             </button>
                             <button class="tile" data-value="tableFormatter">
                                 <span class="tile-icon">📊</span>
-                                <span class="tile-name">テーブル整形<small>(Markdown)</small></span>
+                                <span class="tile-name"><span data-i18n="tile.tableFormatter">テーブル整形</span><small
+                                        data-i18n="tile.tableFormatterSub">(Markdown)</small></span>
                             </button>
                         </div>
                     </div>
 
                     <div class="picker-group" data-group="codeblock">
-                        <div class="picker-group-label">💻 コードブロック化</div>
+                        <div class="picker-group-label" data-i18n="group.codeblock">💻 コードブロック化</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="codeBlockMarkdown">
                                 <span class="tile-icon">📝</span>
-                                <span class="tile-name">Markdown</span>
+                                <span class="tile-name" data-i18n="tile.codeBlockMarkdown">Markdown</span>
                             </button>
                             <button class="tile" data-value="codeBlockJs">
                                 <span class="tile-icon">🟨</span>
-                                <span class="tile-name">JavaScript</span>
+                                <span class="tile-name" data-i18n="tile.codeBlockJs">JavaScript</span>
                             </button>
                             <button class="tile" data-value="codeBlockPython">
                                 <span class="tile-icon">🐍</span>
-                                <span class="tile-name">Python</span>
+                                <span class="tile-name" data-i18n="tile.codeBlockPython">Python</span>
                             </button>
                             <button class="tile" data-value="codeBlockPlaintext">
                                 <span class="tile-icon">📄</span>
-                                <span class="tile-name">Plaintext</span>
+                                <span class="tile-name" data-i18n="tile.codeBlockPlaintext">Plaintext</span>
                             </button>
                             <button class="tile" data-value="codeBlockGeneric">
                                 <span class="tile-icon">📦</span>
-                                <span class="tile-name">汎用</span>
+                                <span class="tile-name" data-i18n="tile.codeBlockGeneric">汎用</span>
                             </button>
                         </div>
                     </div>
 
                     <div class="picker-group" data-group="textformat">
-                        <div class="picker-group-label">✍️ テキスト整形・リスト化</div>
+                        <div class="picker-group-label" data-i18n="group.textformat">✍️ テキスト整形・リスト化</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="markdownGeminiFix">
                                 <span class="tile-icon">✨</span>
-                                <span class="tile-name">Markdown修正<small>(Gemini用)</small></span>
+                                <span class="tile-name"><span data-i18n="tile.markdownGeminiFix">Markdown修正</span><small
+                                        data-i18n="tile.markdownGeminiFixSub">(Gemini用)</small></span>
                             </button>
                             <button class="tile" data-value="geminiNewlineFix">
                                 <span class="tile-icon">↵</span>
-                                <span class="tile-name">Gemini改行修正</span>
+                                <span class="tile-name" data-i18n="tile.geminiNewlineFix">Gemini改行修正</span>
                             </button>
                             <button class="tile" data-value="adjustKagikakko">
                                 <span class="tile-icon">「」</span>
-                                <span class="tile-name">括弧ネスト調整</span>
+                                <span class="tile-name" data-i18n="tile.adjustKagikakko">括弧ネスト調整</span>
                             </button>
                             <button class="tile" data-value="markdownQuote">
                                 <span class="tile-icon">❝</span>
-                                <span class="tile-name">引用ブロック</span>
+                                <span class="tile-name" data-i18n="tile.markdownQuote">引用ブロック</span>
                             </button>
                             <button class="tile" data-value="markdownBulletList">
                                 <span class="tile-icon">•</span>
-                                <span class="tile-name">箇条書きリスト</span>
+                                <span class="tile-name" data-i18n="tile.markdownBulletList">箇条書きリスト</span>
                             </button>
                             <button class="tile" data-value="markdownNumberedList">
                                 <span class="tile-icon">①</span>
-                                <span class="tile-name">番号付きリスト</span>
+                                <span class="tile-name" data-i18n="tile.markdownNumberedList">番号付きリスト</span>
                             </button>
                         </div>
                     </div>
 
                     <div class="picker-group" data-group="whitespace">
-                        <div class="picker-group-label">🔄 空白・改行の変換</div>
+                        <div class="picker-group-label" data-i18n="group.whitespace">🔄 空白・改行の変換</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="stripTrailingWhitespace">
                                 <span class="tile-icon">🧹</span>
-                                <span class="tile-name">行末空白削除</span>
+                                <span class="tile-name" data-i18n="tile.stripTrailingWhitespace">行末空白削除</span>
                             </button>
                             <button class="tile" data-value="trimWhitespace">
                                 <span class="tile-icon">⇤</span>
-                                <span class="tile-name">行頭空白削除</span>
+                                <span class="tile-name" data-i18n="tile.trimWhitespace">行頭空白削除</span>
                             </button>
                             <button class="tile" data-value="spaceToFullwidth">
                                 <span class="tile-icon">⟷</span>
-                                <span class="tile-name">半角→全角スペース</span>
+                                <span class="tile-name" data-i18n="tile.spaceToFullwidth">半角→全角スペース</span>
                             </button>
                             <button class="tile" data-value="spaceToHalfwidth">
                                 <span class="tile-icon">⟵</span>
-                                <span class="tile-name">全角→半角スペース</span>
+                                <span class="tile-name" data-i18n="tile.spaceToHalfwidth">全角→半角スペース</span>
                             </button>
                             <button class="tile" data-value="newlinesToSlash">
                                 <span class="tile-icon">/</span>
-                                <span class="tile-name">改行→スラッシュ</span>
+                                <span class="tile-name" data-i18n="tile.newlinesToSlash">改行→スラッシュ</span>
                             </button>
                             <button class="tile" data-value="newlinesToSpace">
                                 <span class="tile-icon">⎵</span>
-                                <span class="tile-name">改行→スペース</span>
+                                <span class="tile-name" data-i18n="tile.newlinesToSpace">改行→スペース</span>
                             </button>
                         </div>
                     </div>
 
                     <div class="picker-group" data-group="encode">
-                        <div class="picker-group-label">🔐 エンコード・デコード</div>
+                        <div class="picker-group-label" data-i18n="group.encode">🔐 エンコード・デコード</div>
                         <div class="picker-tiles">
                             <button class="tile" data-value="base64Encode">
                                 <span class="tile-icon">🔒</span>
-                                <span class="tile-name">Base64エンコード</span>
+                                <span class="tile-name" data-i18n="tile.base64Encode">Base64エンコード</span>
                             </button>
                             <button class="tile" data-value="base64Decode">
                                 <span class="tile-icon">🔓</span>
-                                <span class="tile-name">Base64デコード</span>
+                                <span class="tile-name" data-i18n="tile.base64Decode">Base64デコード</span>
                             </button>
                             <button class="tile" data-value="urlEncode">
                                 <span class="tile-icon">🌐</span>
-                                <span class="tile-name">URLエンコード</span>
+                                <span class="tile-name" data-i18n="tile.urlEncode">URLエンコード</span>
                             </button>
                             <button class="tile" data-value="urlDecode">
                                 <span class="tile-icon">🔗</span>
-                                <span class="tile-name">URLデコード</span>
+                                <span class="tile-name" data-i18n="tile.urlDecode">URLデコード</span>
                             </button>
                         </div>
                     </div>
@@ -311,7 +341,8 @@
                 <!-- 選択中の機能バッジ -->
                 <div id="selectedBadge" class="selected-badge hidden">
                     <span id="selectedBadgeText"></span>
-                    <button id="clearSelectionBtn" class="badge-clear" aria-label="選択解除">✕</button>
+                    <button id="clearSelectionBtn" class="badge-clear" aria-label="選択解除"
+                        data-i18n-aria="badge.clearAria">✕</button>
                 </div>
             </section>
 
@@ -321,22 +352,22 @@
                     <button id="pasteAndConvertButton" class="btn btn-primary btn-large">
                         <span class="btn-icon">⚡</span>
                         <span class="btn-text">
-                            <span class="btn-title">貼り付けて変換</span>
-                            <span class="btn-sub">クリップボード → 変換 → コピー</span>
+                            <span class="btn-title" data-i18n="action.pasteAndConvert.title">貼り付けて変換</span>
+                            <span class="btn-sub" data-i18n="action.pasteAndConvert.sub">クリップボード → 変換 → コピー</span>
                         </span>
                     </button>
                     <button id="convertAndCopyButton" class="btn btn-secondary-action">
                         <span class="btn-icon">🔄</span>
                         <span class="btn-text">
-                            <span class="btn-title">変換してコピー</span>
-                            <span class="btn-sub">入力内容を変換</span>
+                            <span class="btn-title" data-i18n="action.convertAndCopy.title">変換してコピー</span>
+                            <span class="btn-sub" data-i18n="action.convertAndCopy.sub">入力内容を変換</span>
                         </span>
                     </button>
                     <button id="pasteButton" class="btn btn-ghost">
                         <span class="btn-icon">📋</span>
                         <span class="btn-text">
-                            <span class="btn-title">貼り付けのみ</span>
-                            <span class="btn-sub">クリップボードから入力</span>
+                            <span class="btn-title" data-i18n="action.pasteOnly.title">貼り付けのみ</span>
+                            <span class="btn-sub" data-i18n="action.pasteOnly.sub">クリップボードから入力</span>
                         </span>
                     </button>
                 </div>
@@ -345,8 +376,8 @@
                     <button id="cancelAiButton" class="btn btn-danger">
                         <span class="btn-icon">🛑</span>
                         <span class="btn-text">
-                            <span class="btn-title">AI処理をキャンセル</span>
-                            <span class="btn-sub">処理を中止して元の状態に戻します</span>
+                            <span class="btn-title" data-i18n="action.cancelAi.title">AI処理をキャンセル</span>
+                            <span class="btn-sub" data-i18n="action.cancelAi.sub">処理を中止して元の状態に戻します</span>
                         </span>
                     </button>
                 </div>
@@ -355,13 +386,15 @@
             <!-- 出力エリア -->
             <section class="section" id="outputSection">
                 <label class="field-label" for="outputText">
-                    <span class="label-icon">📤</span> 変換結果
-                    <span class="label-hint">（自動コピーされます）</span>
+                    <span class="label-icon">📤</span> <span data-i18n="output.label">変換結果</span>
+                    <span class="label-hint" data-i18n="output.hint">（自動コピーされます）</span>
                 </label>
                 <div class="textarea-wrapper">
-                    <textarea id="outputText" rows="7" readonly placeholder="変換結果がここに表示されます…"></textarea>
+                    <textarea id="outputText" rows="7" readonly placeholder="変換結果がここに表示されます…"
+                        data-i18n-placeholder="output.placeholder"></textarea>
                     <button id="copyOutputButton" class="textarea-copy-btn" aria-label="コピー"
-                        title="クリップボードにコピー">📋</button>
+                        data-i18n-aria="output.copyAria" title="クリップボードにコピー"
+                        data-i18n-title="output.copyTitle">📋</button>
                 </div>
             </section>
 
@@ -369,7 +402,8 @@
 
         <!-- フッター -->
         <footer class="app-footer">
-            <p>⚠️ AI機能（自動判定・テーブル整形等）はPuterおよび外部AI APIを利用しています。結果の正確性は保証されません。入力内容に機密情報を含めないでください。本ツールは技術検証・実験用途を含みます。</p>
+            <p data-i18n="footer.disclaimer">⚠️ AI機能（自動判定・テーブル整形等）はPuterおよび外部AI
+                APIを利用しています。結果の正確性は保証されません。入力内容に機密情報を含めないでください。本ツールは技術検証・実験用途を含みます。</p>
         </footer>
     </div>
 
@@ -378,14 +412,16 @@
         <div class="modal-card">
             <div class="modal-header">
                 <span class="shield-icon">🛡️</span>
-                <h2>AI機能の利用確認</h2>
+                <h2 data-i18n="consent.title">AI機能の利用確認</h2>
             </div>
             <div class="modal-body">
-                <p>AI機能を利用する際、入力内容が外部AIプロバイダ（PuterおよびOpenAI等）のサーバーへ送信されます。機密情報などを入力しないようご注意ください。よろしいですか？</p>
+                <p data-i18n="consent.body">
+                    AI機能を利用する際、入力内容が外部AIプロバイダ（PuterおよびOpenAI等）のサーバーへ送信されます。機密情報などを入力しないようご注意ください。よろしいですか？</p>
             </div>
             <div class="modal-footer">
-                <button id="consentCancelBtn" class="btn btn-ghost modal-btn">キャンセル</button>
-                <button id="consentApproveBtn" class="btn btn-primary modal-btn">同意して実行</button>
+                <button id="consentCancelBtn" class="btn btn-ghost modal-btn" data-i18n="consent.cancel">キャンセル</button>
+                <button id="consentApproveBtn" class="btn btn-primary modal-btn"
+                    data-i18n="consent.approve">同意して実行</button>
             </div>
         </div>
     </div>
