@@ -786,7 +786,8 @@ textarea {
     border: 1px solid var(--c-border-subtle);
 }
 
-.theme-option-btn {
+.theme-option-btn,
+.lang-option-btn {
     border: none;
     background: transparent;
     color: var(--c-text-muted);
@@ -800,11 +801,13 @@ textarea {
     text-align: center;
 }
 
-.theme-option-btn:hover {
+.theme-option-btn:hover,
+.lang-option-btn:hover {
     color: var(--c-text);
 }
 
-.theme-option-btn.active {
+.theme-option-btn.active,
+.lang-option-btn.active {
     background: var(--c-surface);
     color: var(--c-primary);
     box-shadow: var(--shadow-sm);
@@ -874,19 +877,19 @@ textarea {
     background-color: white;
     transition: var(--t-fast);
     border-radius: 50%;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.toggle-switch input:checked + .toggle-slider {
+.toggle-switch input:checked+.toggle-slider {
     background-color: var(--c-primary);
 }
 
-.toggle-switch input:focus-visible + .toggle-slider {
+.toggle-switch input:focus-visible+.toggle-slider {
     outline: 2px solid var(--c-primary);
     outline-offset: 2px;
 }
 
-.toggle-switch input:checked + .toggle-slider:before {
+.toggle-switch input:checked+.toggle-slider:before {
     transform: translateX(20px);
 }
 
@@ -1173,11 +1176,13 @@ body.bubble-mode .app-footer {
         top: 12px;
         right: 12px;
     }
+
     .settings-toggle {
         width: 38px;
         height: 38px;
         font-size: 1.1rem;
     }
+
     .settings-menu {
         width: 270px;
     }
@@ -1190,6 +1195,7 @@ body.bubble-mode .app-footer {
     .picker-tiles {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
+
     .tab-btn {
         flex: 1 1 calc(33.333% - 2px);
     }
@@ -1244,7 +1250,7 @@ body.bubble-mode .app-footer {
     .picker-tiles {
         grid-template-columns: repeat(3, 1fr);
     }
-    
+
     .tab-btn {
         flex: 1 1 calc(33.333% - 2px);
     }

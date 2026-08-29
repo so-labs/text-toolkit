@@ -83,7 +83,7 @@ export const applyTheme = (theme, animate = false) => {
     }
 
     // UIボタンの状態更新
-    const themeButtons = document.querySelectorAll('.theme-option-btn');
+    const themeButtons = document.querySelectorAll('#themeOptions .theme-option-btn');
     themeButtons.forEach(btn => {
         if (btn.dataset.theme === theme) {
             btn.classList.add('active');
@@ -120,10 +120,11 @@ export const initTheme = () => {
     applyTheme(savedTheme, false);
 
     // イベント委譲またはボタン一律登録
-    const themeButtons = document.querySelectorAll('.theme-option-btn');
+    const themeButtons = document.querySelectorAll('#themeOptions .theme-option-btn');
     themeButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const selectedTheme = e.currentTarget.dataset.theme;
+            if (!selectedTheme) return;
             document.documentElement.classList.add('theme-transition');
 
             localStorage.setItem('theme', selectedTheme);
