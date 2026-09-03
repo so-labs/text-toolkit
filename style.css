@@ -801,6 +801,22 @@ textarea {
     text-align: center;
 }
 
+.theme-option-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.theme-option-btn svg {
+    flex-shrink: 0;
+    transition: transform var(--t-fast);
+}
+
+.theme-option-btn:hover svg {
+    transform: scale(1.1);
+}
+
 .theme-option-btn:hover,
 .lang-option-btn:hover {
     color: var(--c-text);
