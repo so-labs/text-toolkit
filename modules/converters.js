@@ -49,6 +49,7 @@ export const converters = {
     codeBlockGeneric:  (text) => Utils.createCodeBlock('', text),
     newlinesToSlash:   (text) => text.replace(/\n/g, ' / '),
     newlinesToSpace:   (text) => text.replace(/\n/g, ' '),
+    newlinesToLiteralN: (text) => text.replace(/\r\n|\r|\n/g, '\\n'),
     markdownGeminiFix: (text) => {
         return text
             .replace(/ /g, ' ')

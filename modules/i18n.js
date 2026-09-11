@@ -74,6 +74,7 @@ export const translations = {
         'tile.spaceToHalfwidth': '全角→半角スペース',
         'tile.newlinesToSlash': '改行→スラッシュ',
         'tile.newlinesToSpace': '改行→スペース',
+        'tile.newlinesToLiteralN': '改行→\\n文字列',
 
         // Tiles - Encode
         'tile.base64Encode': 'Base64エンコード',
@@ -101,6 +102,7 @@ export const translations = {
         'option.spaceToHalfwidth': '全角スペース → 半角統一',
         'option.newlinesToSlash': '改行 → " / " に変換',
         'option.newlinesToSpace': '改行 → 半角スペースに変換',
+        'option.newlinesToLiteralN': '改行 → \\n という文字列に変換',
         'option.base64Encode': 'Base64エンコード',
         'option.base64Decode': 'Base64デコード',
         'option.urlEncode': 'URLエンコード',
@@ -236,6 +238,7 @@ export const translations = {
         'tile.spaceToHalfwidth': 'Full → Half-width Space',
         'tile.newlinesToSlash': 'Newline → Slash',
         'tile.newlinesToSpace': 'Newline → Space',
+        'tile.newlinesToLiteralN': 'Newline → \\n String',
 
         // Tiles - Encode
         'tile.base64Encode': 'Base64 Encode',
@@ -263,6 +266,7 @@ export const translations = {
         'option.spaceToHalfwidth': 'Full-width → Half-width Space',
         'option.newlinesToSlash': 'Newline → " / "',
         'option.newlinesToSpace': 'Newline → Space',
+        'option.newlinesToLiteralN': 'Newline → "\\n" String',
         'option.base64Encode': 'Base64 Encode',
         'option.base64Decode': 'Base64 Decode',
         'option.urlEncode': 'URL Encode',
