@@ -7,9 +7,10 @@ __pycache__
 *.diff
 *.txt
 .antigravitycli
+.playwright-mcp
 
 # 設定ファイル
-*config.json
+*_config.json
 
 # 作業中ファイル
 *.local.*

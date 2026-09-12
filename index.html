@@ -154,8 +154,17 @@
 
             <!-- 変換機能選択 -->
             <section class="section">
-                <div class="field-label">
+                <div class="field-label conversion-field-label">
                     <span class="label-icon">⚡</span> <span data-i18n="conversion.label">変換機能を選択</span>
+                    <label class="chain-toggle-wrap" id="chainToggleWrap" title="連続変換: 最大3つまで選択し、選択順に変換します"
+                        data-i18n-title="conversion.chainTitle">
+                        <span class="chain-toggle-text" data-i18n="conversion.chain">連続変換</span>
+                        <span class="toggle-switch toggle-switch-sm">
+                            <input type="checkbox" id="chainToggle" aria-label="連続変換"
+                                data-i18n-aria="conversion.chain">
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
                 </div>
 
                 <!-- hidden select (値の保持用) -->
@@ -347,11 +356,13 @@
                     </div>
                 </div>
 
-                <!-- 選択中の機能バッジ -->
-                <div id="selectedBadge" class="selected-badge hidden">
-                    <span id="selectedBadgeText"></span>
-                    <button id="clearSelectionBtn" class="badge-clear" aria-label="選択解除"
-                        data-i18n-aria="badge.clearAria">✕</button>
+                <!-- 選択中の機能バッジ（連続変換時は右に連なって表示） -->
+                <div id="selectedBadgeList" class="badge-list hidden">
+                    <div id="selectedBadge" class="selected-badge badge-pos-1">
+                        <span id="selectedBadgeText"></span>
+                        <button id="clearSelectionBtn" class="badge-clear" aria-label="選択解除"
+                            data-i18n-aria="badge.clearAria">✕</button>
+                    </div>
                 </div>
             </section>
 

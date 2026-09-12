@@ -30,6 +30,8 @@ export const translations = {
         'conversion.label': '変換機能を選択',
         'conversion.selectAria': '変換タイプ',
         'conversion.selectPlaceholder': '変換機能を選択してください',
+        'conversion.chain': '連続変換',
+        'conversion.chainTitle': '連続変換: 最大3つまで選択し、選択順に変換します',
 
         // Tabs
         'tab.ai': 'AI機能',
@@ -158,6 +160,7 @@ export const translations = {
         'toast.aiCancelled': 'AI処理をキャンセルしました。',
         'toast.pasteConvertFailed': '貼り付けと変換に失敗しました。ブラウザのセキュリティ設定を確認してください。',
         'toast.convertFailed': '変換に失敗しました。',
+        'toast.chainMax': '連続変換を選択できるのは最大3つまでです。',
 
         // Error Messages
         'error.conversionFailed': '【エラー】変換またはコピーに失敗しました。',
@@ -194,6 +197,8 @@ export const translations = {
         'conversion.label': 'Select conversion',
         'conversion.selectAria': 'Conversion type',
         'conversion.selectPlaceholder': 'Select a conversion',
+        'conversion.chain': 'Chain',
+        'conversion.chainTitle': 'Chain: select up to 3 conversions and apply them in order',
 
         // Tabs
         'tab.ai': 'AI Features',
@@ -322,6 +327,7 @@ export const translations = {
         'toast.aiCancelled': 'AI processing cancelled.',
         'toast.pasteConvertFailed': 'Paste & convert failed. Check browser security settings.',
         'toast.convertFailed': 'Conversion failed.',
+        'toast.chainMax': 'You can chain up to 3 conversions.',
 
         // Error Messages
         'error.conversionFailed': '[Error] Conversion or copy failed.',

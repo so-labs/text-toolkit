@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearSelectionBtn = document.getElementById('clearSelectionBtn');
     const selectedBadge = document.getElementById('selectedBadge');
     const selectedBadgeText = document.getElementById('selectedBadgeText');
+    const selectedBadgeList = document.getElementById('selectedBadgeList');
+    const chainToggle = document.getElementById('chainToggle');
     const tiles = document.querySelectorAll('.tile');
     const cancelAiContainer = document.getElementById('cancelAiContainer');
     const cancelAiButton = document.getElementById('cancelAiButton');
@@ -99,12 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const refreshSelectedBadgeText = () => {
-        const selectedTile = document.querySelector('.tile.selected');
-        if (selectedTile && selectedBadgeText) {
-            const label = getTileLabel(selectedTile);
-            const icon = selectedTile.querySelector('.tile-icon')?.textContent || '';
-            selectedBadgeText.textContent = `${icon} ${label}`;
-        }
+        renderBadges();
     };
 
     const applyLang = (lang) => {
@@ -171,10 +168,20 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.classList.add('bubble-mode');
             if (btnTitle) btnTitle.textContent = t('bubble.convert');
             if (btnSub) btnSub.textContent = t('bubble.convertSub');
+
+            // バブルモードではバッジ表示がないため連続変換を無効化する
+            if (chainEnabled || selectedTypes.length > 1) {
+                chainEnabled = false;
+                selectedTypes = selectedTypes.slice(0, 1);
+                if (chainToggle) chainToggle.checked = false;
+                syncSelectionToDom();
+            }
+            if (chainToggle) chainToggle.disabled = true;
         } else {
             document.body.classList.remove('bubble-mode');
             if (btnTitle) btnTitle.textContent = t('action.convertAndCopy.title');
             if (btnSub) btnSub.textContent = t('action.convertAndCopy.sub');
+            if (chainToggle) chainToggle.disabled = false;
         }
         if (bubbleToggle) {
             bubbleToggle.checked = isBubble;
@@ -291,19 +298,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初期状態のタブを選択（ブラウザの自動復元値を考慮）
     const initialValue = conversionType.value;
     let initialTab = 'ai';
+    let pendingInitialSelection = '';
     if (initialValue) {
         const matchingTile = document.querySelector(`.tile[data-value="${initialValue}"]`);
         if (matchingTile) {
             const group = matchingTile.closest('.picker-group');
             if (group && group.dataset.group) {
                 initialTab = group.dataset.group;
-                selectTile(matchingTile);
+                pendingInitialSelection = initialValue;
             }
         }
     }
     switchTab(initialTab);
 
-    // ── Tile Picker ────────────────────────────────────────────────────────────
+    // ── Tile Picker / Chain Selection ─────────────────────────────────────────
+    const MAX_CHAIN_SELECTIONS = 3;
+    let chainEnabled = false;
+    let selectedTypes = pendingInitialSelection ? [pendingInitialSelection] : [];
+
     /** タイルのラベルテキストを取得 */
     const getTileLabel = (tile) => {
         const nameEl = tile.querySelector('.tile-name');
@@ -313,27 +325,163 @@ document.addEventListener('DOMContentLoaded', () => {
         return clone.textContent.trim();
     };
 
-    /** 選択状態を更新する */
-    const selectTile = (tile) => {
-        // 全タイルの selected を解除
-        tiles.forEach(t => t.classList.remove('selected'));
+    const getTileByValue = (value) => document.querySelector(`.tile[data-value="${value}"]`);
 
-        if (!tile) {
-            conversionType.value = '';
+    // ── 連続変換カラー（ベース色 --c-primary から動的に算出） ──────────────────
+    // ベース色が変わっても 2〜3選択目の色が自動で追従するよう、HSL の色相を回転させる
+    const CHAIN_HUE_ROTATIONS = [0, 55, 110];
+
+    const parseCssColor = (input) => {
+        const str = (input || '').trim();
+        let m = str.match(/^#([0-9a-f]{3,8})$/i);
+        if (m) {
+            let hex = m[1];
+            if (hex.length === 3 || hex.length === 4) {
+                hex = hex.slice(0, 3).split('').map(c => c + c).join('');
+            } else {
+                hex = hex.slice(0, 6);
+            }
+            const n = parseInt(hex, 16);
+            return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+        }
+        m = str.match(/^rgba?\(([^)]+)\)$/i);
+        if (m) {
+            const parts = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
+            return { r: parts[0], g: parts[1], b: parts[2] };
+        }
+        return null;
+    };
+
+    const rgbToHsl = ({ r, g, b }) => {
+        r /= 255; g /= 255; b /= 255;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const l = (max + min) / 2;
+        let h = 0;
+        let s = 0;
+        if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+            else if (max === g) h = (b - r) / d + 2;
+            else h = (r - g) / d + 4;
+            h *= 60;
+        }
+        return { h, s, l };
+    };
+
+    const updateChainColors = () => {
+        const root = document.documentElement;
+        const base = parseCssColor(getComputedStyle(root).getPropertyValue('--c-primary'))
+            || { r: 99, g: 102, b: 241 };
+        const { h, s, l } = rgbToHsl(base);
+        const sPct = Math.round(s * 100);
+        const lPct = Math.round(l * 100);
+        const isDark = root.classList.contains('dark-mode');
+
+        CHAIN_HUE_ROTATIONS.forEach((rot, i) => {
+            const idx = i + 1;
+            const hue = Math.round(((h + rot) % 360 + 360) % 360);
+            root.style.setProperty(`--chain-c${idx}`, `hsl(${hue}, ${sPct}%, ${lPct}%)`);
+            root.style.setProperty(`--chain-badge-bg${idx}`, `hsla(${hue}, ${sPct}%, ${lPct}%, 0.1)`);
+            root.style.setProperty(`--chain-badge-bd${idx}`, `hsla(${hue}, ${sPct}%, ${lPct}%, 0.25)`);
+            root.style.setProperty(`--chain-tile-bg${idx}`, `hsla(${hue}, ${sPct}%, ${lPct}%, ${isDark ? 0.12 : 0.08})`);
+            root.style.setProperty(`--chain-glow${idx}`, `hsla(${hue}, ${sPct}%, ${lPct}%, ${isDark ? 0.25 : 0.2})`);
+        });
+    };
+
+    updateChainColors();
+    new MutationObserver(updateChainColors).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+    });
+
+    /** 現在の選択状態からバッジ一覧を再描画する（1つ目は既存の #selectedBadge） */
+    const renderBadges = () => {
+        selectedBadgeList.querySelectorAll('.dyn-badge, .badge-sep').forEach((el) => el.remove());
+
+        if (selectedTypes.length === 0) {
             selectedBadge.classList.add('hidden');
+            selectedBadgeList.classList.add('hidden');
             return;
         }
 
-        tile.classList.add('selected');
-        conversionType.value = tile.dataset.value;
-
-        const label = getTileLabel(tile);
-        const icon = tile.querySelector('.tile-icon').textContent;
-        selectedBadgeText.textContent = `${icon} ${label}`;
+        selectedBadgeList.classList.remove('hidden');
         selectedBadge.classList.remove('hidden');
+        const firstTile = getTileByValue(selectedTypes[0]);
+        if (firstTile && selectedBadgeText) {
+            const icon = firstTile.querySelector('.tile-icon')?.textContent || '';
+            selectedBadgeText.textContent = `${icon} ${getTileLabel(firstTile)}`;
+        }
+
+        for (let i = 1; i < selectedTypes.length; i++) {
+            const tile = getTileByValue(selectedTypes[i]);
+            if (!tile) continue;
+
+            const sep = document.createElement('span');
+            sep.className = 'badge-sep';
+            sep.setAttribute('aria-hidden', 'true');
+            sep.textContent = '→';
+
+            const badge = document.createElement('div');
+            badge.className = `selected-badge dyn-badge badge-pos-${i + 1}`;
+            const text = document.createElement('span');
+            const icon = tile.querySelector('.tile-icon')?.textContent || '';
+            text.textContent = `${icon} ${getTileLabel(tile)}`;
+            const clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.className = 'badge-clear';
+            clearBtn.textContent = '✕';
+            clearBtn.setAttribute('aria-label', t('badge.clearAria'));
+            clearBtn.addEventListener('click', () => {
+                selectedTypes.splice(i, 1);
+                syncSelectionToDom();
+            });
+            badge.append(text, clearBtn);
+
+            selectedBadgeList.append(sep, badge);
+        }
+    };
+
+    /** 選択タイル・バッジ・hidden select を現在の状態に合わせて更新する */
+    const syncSelectionToDom = () => {
+        conversionType.value = selectedTypes[0] || '';
+
+        tiles.forEach((tile) => {
+            const idx = selectedTypes.indexOf(tile.dataset.value);
+            tile.classList.toggle('selected', idx !== -1);
+            tile.classList.toggle('selected-2', idx === 1);
+            tile.classList.toggle('selected-3', idx === 2);
+        });
+
+        renderBadges();
+    };
+
+    /** タイルの選択/解除。連続変換 ON のときは最大3つまで右に連ねる */
+    const toggleTileSelection = (tile) => {
+        const value = tile.dataset.value;
+        const idx = selectedTypes.indexOf(value);
+
+        if (chainEnabled) {
+            if (idx !== -1) {
+                selectedTypes.splice(idx, 1);
+            } else {
+                if (selectedTypes.length >= MAX_CHAIN_SELECTIONS) {
+                    showToast(t('toast.chainMax'), 'warning');
+                    return;
+                }
+                selectedTypes.push(value);
+            }
+        } else {
+            selectedTypes = idx !== -1 ? [] : [value];
+        }
+
+        syncSelectionToDom();
 
         // スムーズに選択バッジまでスクロール（スマホ向け）
-        selectedBadge.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (selectedTypes.includes(value)) {
+            selectedBadgeList.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     };
 
     tiles.forEach(tile => {
@@ -365,16 +513,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 isScrolling = false;
                 return;
             }
-            // 既に選択済みならトグル解除
-            if (tile.classList.contains('selected')) {
-                selectTile(null);
-            } else {
-                selectTile(tile);
-            }
+            toggleTileSelection(tile);
         });
     });
 
-    clearSelectionBtn.addEventListener('click', () => selectTile(null));
+    // 先頭のバッジの ✕ はその項目のみ解除
+    clearSelectionBtn.addEventListener('click', () => {
+        selectedTypes.splice(0, 1);
+        syncSelectionToDom();
+    });
+
+    // 連続変換トグル（localStorage 等には保存しない）
+    chainToggle?.addEventListener('change', (e) => {
+        chainEnabled = e.target.checked;
+        if (!chainEnabled && selectedTypes.length > 1) {
+            selectedTypes = selectedTypes.slice(0, 1);
+            syncSelectionToDom();
+        }
+    });
+
+    syncSelectionToDom();
 
     // ── Cancel Ai Button ────────────────────────────────────────────────
     cancelAiButton?.addEventListener('click', () => {
@@ -417,17 +575,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Core Logic ────────────────────────────────────────────────────────────
+    // 選択された変換を順に適用する（連続変換 OFF のときは1つのみ）
     const performConversion = async (text, signal) => {
-        const selectedType = conversionType.value;
-        const converter = converters[selectedType];
-        if (!converter) {
-            // Service Worker の旧キャッシュ混在などで、HTMLだけ新・JSが旧の
-            // 場合にここに来る。無言で何もしないと原因が分からないため警告する。
-            console.warn(`未知の変換タイプです: "${selectedType}"。キャッシュが古い可能性があります。リロードしてください。`);
-            showToast(t('toast.convertFailed'), 'error');
-            return text;
+        let current = text;
+        for (const selectedType of selectedTypes) {
+            const converter = converters[selectedType];
+            if (!converter) {
+                // Service Worker の旧キャッシュ混在などで、HTMLだけ新・JSが旧の
+                // 場合にここに来る。無言で何もしないと原因が分からないため警告する。
+                console.warn(`未知の変換タイプです: "${selectedType}"。キャッシュが古い可能性があります。リロードしてください。`);
+                showToast(t('toast.convertFailed'), 'error');
+                return current;
+            }
+            current = await converter(current, signal);
+            if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
         }
-        return await converter(text, signal);
+        return current;
     };
 
     const setButtonsBusy = (busy, showCancel = false) => {
@@ -474,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const runConversion = async () => {
-        if (!conversionType.value) {
+        if (selectedTypes.length === 0) {
             showToast(t('toast.selectConversion'), 'warning');
             // 選択エリアへスクロール
             document.getElementById('conversionPicker')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -501,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const aiFunctions = ['codeBlockAuto', 'tableFormatter'];
-        const needsAiProcessing = aiFunctions.includes(conversionType.value);
+        const needsAiProcessing = selectedTypes.some(v => aiFunctions.includes(v));
 
         if (needsAiProcessing) {
             const consent = CookieUtils.get('ai_consent');

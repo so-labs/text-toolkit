@@ -51,6 +51,23 @@
     --font-heading: 'Plus Jakarta Sans', var(--font-sans);
     --font-mono: 'Consolas', 'Courier New', Monaco, 'SFMono-Regular', monospace;
 
+    /* Chain conversion colors (JSが --c-primary から動的に再計算。ここではフォールバック値) */
+    --chain-c1: var(--c-primary);
+    --chain-badge-bg1: rgba(99, 102, 241, 0.1);
+    --chain-badge-bd1: rgba(99, 102, 241, 0.25);
+    --chain-tile-bg1: rgba(99, 102, 241, 0.08);
+    --chain-glow1: rgba(99, 102, 241, 0.2);
+    --chain-c2: hsl(294, 84%, 67%);
+    --chain-badge-bg2: hsla(294, 84%, 67%, 0.1);
+    --chain-badge-bd2: hsla(294, 84%, 67%, 0.25);
+    --chain-tile-bg2: hsla(294, 84%, 67%, 0.08);
+    --chain-glow2: hsla(294, 84%, 67%, 0.2);
+    --chain-c3: hsl(349, 84%, 67%);
+    --chain-badge-bg3: hsla(349, 84%, 67%, 0.1);
+    --chain-badge-bd3: hsla(349, 84%, 67%, 0.25);
+    --chain-tile-bg3: hsla(349, 84%, 67%, 0.08);
+    --chain-glow3: hsla(349, 84%, 67%, 0.2);
+
     /* Transitions */
     --t-fast: 0.12s ease;
     --t-mid: 0.22s ease;
@@ -84,6 +101,23 @@
     --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55);
     --shadow-primary: 0 8px 24px rgba(129, 140, 248, 0.2);
     --shadow-tile-sel: 0 0 0 2px var(--c-primary), 0 4px 12px rgba(129, 140, 248, 0.25);
+
+    /* Chain conversion colors – dark fallbacks (JSが動的に再計算) */
+    --chain-c1: var(--c-primary);
+    --chain-badge-bg1: rgba(129, 140, 248, 0.1);
+    --chain-badge-bd1: rgba(129, 140, 248, 0.25);
+    --chain-tile-bg1: rgba(129, 140, 248, 0.12);
+    --chain-glow1: rgba(129, 140, 248, 0.25);
+    --chain-c2: hsl(290, 89%, 74%);
+    --chain-badge-bg2: hsla(290, 89%, 74%, 0.1);
+    --chain-badge-bd2: hsla(290, 89%, 74%, 0.25);
+    --chain-tile-bg2: hsla(290, 89%, 74%, 0.12);
+    --chain-glow2: hsla(290, 89%, 74%, 0.25);
+    --chain-c3: hsl(345, 89%, 74%);
+    --chain-badge-bg3: hsla(345, 89%, 74%, 0.1);
+    --chain-badge-bd3: hsla(345, 89%, 74%, 0.25);
+    --chain-tile-bg3: hsla(345, 89%, 74%, 0.12);
+    --chain-glow3: hsla(345, 89%, 74%, 0.25);
 }
 
 /* ============================================================
@@ -218,6 +252,31 @@ h1 {
     letter-spacing: 0;
     color: var(--c-text-3);
     margin-left: 2px;
+}
+
+/* 連続変換トグル（「変換機能を選択」の右。狭い DPI では折り返して下に表示） */
+.conversion-field-label {
+    flex-wrap: wrap;
+    row-gap: 8px;
+}
+
+.chain-toggle-wrap {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--c-text-2);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.chain-toggle-wrap .toggle-switch {
+    cursor: inherit;
 }
 
 /* ============================================================
@@ -429,15 +488,26 @@ textarea {
     }
 
     &.selected {
-        border-color: var(--c-primary);
-        background: rgba(99, 102, 241, 0.08);
-        color: var(--c-primary);
-        box-shadow: var(--shadow-tile-sel);
+        border-color: var(--chain-c1);
+        background: var(--chain-tile-bg1);
+        color: var(--chain-c1);
+        box-shadow: 0 0 0 2px var(--chain-c1), 0 4px 12px var(--chain-glow1);
     }
-}
 
-.dark-mode .tile.selected {
-    background: rgba(129, 140, 248, 0.12);
+    /* 連続変換 2つ目・3つ目（色はJSが --c-primary から動的算出） */
+    &.selected.selected-2 {
+        border-color: var(--chain-c2);
+        background: var(--chain-tile-bg2);
+        color: var(--chain-c2);
+        box-shadow: 0 0 0 2px var(--chain-c2), 0 4px 12px var(--chain-glow2);
+    }
+
+    &.selected.selected-3 {
+        border-color: var(--chain-c3);
+        background: var(--chain-tile-bg3);
+        color: var(--chain-c3);
+        box-shadow: 0 0 0 2px var(--chain-c3), 0 4px 12px var(--chain-glow3);
+    }
 }
 
 .tile-icon {
@@ -461,19 +531,54 @@ textarea {
 /* ============================================================
    Selected Badge
    ============================================================ */
+.badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: var(--sp-sm);
+}
+
+.badge-list.hidden {
+    display: none;
+}
+
+.badge-sep {
+    color: var(--c-text-3);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
 .selected-badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-top: var(--sp-sm);
     padding: 6px 12px;
-    background: rgba(99, 102, 241, 0.1);
-    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: var(--chain-badge-bg1);
+    border: 1px solid var(--chain-badge-bd1);
     border-radius: 999px;
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--c-primary);
+    color: var(--chain-c1);
     transition: all var(--t-mid);
+}
+
+.badge-list .selected-badge {
+    margin-top: 0;
+}
+
+/* 連続変換 2つ目・3つ目（色はJSが --c-primary から動的算出） */
+.selected-badge.badge-pos-2 {
+    background: var(--chain-badge-bg2);
+    border-color: var(--chain-badge-bd2);
+    color: var(--chain-c2);
+}
+
+.selected-badge.badge-pos-3 {
+    background: var(--chain-badge-bg3);
+    border-color: var(--chain-badge-bd3);
+    color: var(--chain-c3);
 }
 
 .selected-badge.hidden {
@@ -484,7 +589,7 @@ textarea {
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--c-primary);
+    color: inherit;
     opacity: 0.6;
     font-size: 0.75rem;
     line-height: 1;
@@ -909,6 +1014,23 @@ textarea {
     transform: translateX(20px);
 }
 
+/* 小型トグル（連続変換用）。ベースの .toggle-switch より後に定義して上書きする */
+.toggle-switch-sm {
+    width: 36px;
+    height: 20px;
+}
+
+.toggle-switch-sm .toggle-slider:before {
+    height: 14px;
+    width: 14px;
+    top: 3px;
+    bottom: 3px;
+}
+
+.toggle-switch-sm input:checked+.toggle-slider:before {
+    transform: translateX(16px);
+}
+
 /* バブルモード時のボディー・レイアウト調整用クラス */
 body.bubble-mode .app-header {
     padding-top: var(--sp-md);
@@ -940,7 +1062,11 @@ body.bubble-mode #pasteButton {
     display: none !important;
 }
 
-body.bubble-mode #selectedBadge {
+body.bubble-mode #selectedBadgeList {
+    display: none !important;
+}
+
+body.bubble-mode .chain-toggle-wrap {
     display: none !important;
 }
 
