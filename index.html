@@ -439,7 +439,33 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js');
+                navigator.serviceWorker.register('./sw.js').then((registration) => {
+                    // 新しいSWが見つかったら即インストールさせる
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // 新バージョンが待機中。次回リロードで最新化される旨を通知
+                                    // (自動リロードは入力内容を消す恐れがあるため、通知に留める)
+                                    console.log('新しいバージョンが利用可能です。リロードで更新されます。');
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+            // 新SWが有効化されたら自動リロード(入力中はスキップ)
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                const input = document.getElementById('inputText');
+                const output = document.getElementById('outputText');
+                const hasUnsaved = (input && input.value) || (output && output.value);
+                if (!hasUnsaved) {
+                    window.location.reload();
+                }
             });
         }
     </script>

@@ -431,7 +431,19 @@ export function onLanguageChange(callback) {
 }
 
 /**
+ * 指定キーの翻訳が存在するか (jaフォールバック含む)
+ */
+export function hasTranslation(key, lang = getLanguage()) {
+    const langDict = translations[lang] || {};
+    if (Object.prototype.hasOwnProperty.call(langDict, key)) return true;
+    const jaDict = translations.ja || {};
+    return Object.prototype.hasOwnProperty.call(jaDict, key);
+}
+
+/**
  * 指定要素配下の [data-i18n], [data-i18n-html], [data-i18n-placeholder], [data-i18n-title], [data-i18n-aria] を一括更新
+ * ※ Service Worker の新旧キャッシュ混在時など、辞書に無いキーは
+ *    HTMLのフォールバック文言を残す (生キーを表示しないための防御)
  */
 export function applyTranslations(root = document) {
     if (!root) return;
@@ -442,7 +454,7 @@ export function applyTranslations(root = document) {
     const textEls = root.querySelectorAll('[data-i18n]');
     textEls.forEach((el) => {
         const key = el.getAttribute('data-i18n');
-        if (key) {
+        if (key && hasTranslation(key, currentLang)) {
             el.textContent = t(key, [], currentLang);
         }
     });
@@ -451,7 +463,7 @@ export function applyTranslations(root = document) {
     const htmlEls = root.querySelectorAll('[data-i18n-html]');
     htmlEls.forEach((el) => {
         const key = el.getAttribute('data-i18n-html');
-        if (key) {
+        if (key && hasTranslation(key, currentLang)) {
             el.innerHTML = t(key, [], currentLang);
         }
     });
@@ -460,7 +472,7 @@ export function applyTranslations(root = document) {
     const placeholderEls = root.querySelectorAll('[data-i18n-placeholder]');
     placeholderEls.forEach((el) => {
         const key = el.getAttribute('data-i18n-placeholder');
-        if (key) {
+        if (key && hasTranslation(key, currentLang)) {
             el.setAttribute('placeholder', t(key, [], currentLang));
         }
     });
@@ -469,7 +481,7 @@ export function applyTranslations(root = document) {
     const titleEls = root.querySelectorAll('[data-i18n-title]');
     titleEls.forEach((el) => {
         const key = el.getAttribute('data-i18n-title');
-        if (key) {
+        if (key && hasTranslation(key, currentLang)) {
             el.setAttribute('title', t(key, [], currentLang));
         }
     });
@@ -478,7 +490,7 @@ export function applyTranslations(root = document) {
     const ariaEls = root.querySelectorAll('[data-i18n-aria]');
     ariaEls.forEach((el) => {
         const key = el.getAttribute('data-i18n-aria');
-        if (key) {
+        if (key && hasTranslation(key, currentLang)) {
             el.setAttribute('aria-label', t(key, [], currentLang));
         }
     });

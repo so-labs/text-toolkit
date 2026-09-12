@@ -6,7 +6,7 @@
  * MM   = 月（01〜12）
  * rN   = その月のリリース回数
  */
-const CACHE_NAME = 'text-toolkit-2026.09-r2';
+const CACHE_NAME = 'text-toolkit-2026.09-r3';
 const ASSETS = [
   './',
   './index.html',
@@ -49,14 +49,44 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// キャッシュ優先（オフライン対応）のフェッチ戦略
+// フェッチ戦略:
+// - ナビゲーション (HTML): network-first。新しい index.html と古い JS の
+//   バージョンスキュー (新HTML+旧JSで翻訳キーが生表示になる問題) を防ぐため。
+//   ネットワーク失敗時のみキャッシュにフォールバックする。
+// - その他のアセット (JS/CSS/画像): stale-while-revalidate。
+//   キャッシュを即返しつつ、裏で取得してキャッシュを更新する。
 self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET') return;
+
+  // ナビゲーションリクエストは network-first
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return networkResponse;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // 静的アセットは stale-while-revalidate
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request);
+    caches.match(request).then((cachedResponse) => {
+      const networkFetch = fetch(request)
+        .then((networkResponse) => {
+          // 不正なレスポンスはキャッシュしない
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+      return cachedResponse || networkFetch;
     })
   );
 });

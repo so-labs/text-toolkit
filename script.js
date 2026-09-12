@@ -420,7 +420,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const performConversion = async (text, signal) => {
         const selectedType = conversionType.value;
         const converter = converters[selectedType];
-        return converter ? await converter(text, signal) : text;
+        if (!converter) {
+            // Service Worker の旧キャッシュ混在などで、HTMLだけ新・JSが旧の
+            // 場合にここに来る。無言で何もしないと原因が分からないため警告する。
+            console.warn(`未知の変換タイプです: "${selectedType}"。キャッシュが古い可能性があります。リロードしてください。`);
+            showToast(t('toast.convertFailed'), 'error');
+            return text;
+        }
+        return await converter(text, signal);
     };
 
     const setButtonsBusy = (busy, showCancel = false) => {
