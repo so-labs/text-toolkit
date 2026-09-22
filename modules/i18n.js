@@ -1,9 +1,9 @@
-// i18n 多言語対応モジュール
+﻿// i18n 多言語対応モジュール
 
 export const translations = {
     ja: {
         // Header
-        'header.title': 'TextToolkit',
+        'header.title': 'Text Toolkit',
         'header.subtitle': 'シンプルで使いやすいテキスト整形・変換ツール',
 
         // Settings Menu
@@ -170,7 +170,7 @@ export const translations = {
     },
     en: {
         // Header
-        'header.title': 'TextToolkit',
+        'header.title': 'Text Toolkit',
         'header.subtitle': 'Simple & easy text formatting & conversion tool',
 
         // Settings Menu

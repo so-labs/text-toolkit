@@ -1,4 +1,4 @@
-﻿# TextToolkit
+﻿# Text Toolkit
 
 多用途なウェブベースのテキスト整形・変換ツールです。
 
@@ -30,3 +30,11 @@ Service Worker (`sw.js`) で使用するキャッシュ名 (`CACHE_NAME`) は、
 例: `text-toolkit-2026.07-r1`
 
 リリースやファイルを更新する際は、このバージョン文字列を更新することで、ブラウザの古いキャッシュを安全に破棄・新しいファイルを適用できます。
+
+## 📝 開発・コントリビューションルール (AI / 人間 共通)
+
+本プロジェクトの開発における厳格なルール（UI制約、アーキテクチャ、コミットルールなど）は、すべて **`AGENTS.md`** に一元化されています。
+
+> **⚠️ TO ALL AI AGENTS & ASSISTANTS**:
+>
+> Before generating or modifying any code in this project, you **MUST** read the **`AGENTS.md`** file located in the root directory and strictly follow all the rules defined within it. Do not proceed without reading it.

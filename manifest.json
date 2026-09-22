@@ -1,6 +1,6 @@
 ﻿{
-  "name": "TextToolkit",
-  "short_name": "TextToolkit",
+  "name": "Text Toolkit",
+  "short_name": "Text Toolkit",
   "description": "テキストの変換・整形・エンコードを簡単に行えるツール",
   "start_url": "./",
   "scope": "./",
