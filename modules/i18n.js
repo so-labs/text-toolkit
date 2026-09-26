@@ -57,6 +57,7 @@ export const translations = {
         'tile.codeBlockMarkdown': 'Markdown',
         'tile.codeBlockJs': 'JavaScript',
         'tile.codeBlockPython': 'Python',
+        'tile.codeBlockJson': 'JSON',
         'tile.codeBlockPlaintext': 'Plaintext',
         'tile.codeBlockGeneric': '汎用',
 
@@ -77,6 +78,7 @@ export const translations = {
         'tile.newlinesToSlash': '改行→スラッシュ',
         'tile.newlinesToSpace': '改行→スペース',
         'tile.newlinesToLiteralN': '改行→\\n文字列',
+        'tile.removeNewlines': '改行削除',
 
         // Tiles - Encode
         'tile.base64Encode': 'Base64エンコード',
@@ -90,6 +92,7 @@ export const translations = {
         'option.codeBlockMarkdown': 'コードブロック (markdown)',
         'option.codeBlockJs': 'コードブロック (javascript)',
         'option.codeBlockPython': 'コードブロック (python)',
+        'option.codeBlockJson': 'コードブロック (json)',
         'option.codeBlockPlaintext': 'コードブロック (plaintext)',
         'option.codeBlockGeneric': 'コードブロック (汎用)',
         'option.markdownGeminiFix': 'Markdown修正 (Gemini用)',
@@ -105,6 +108,7 @@ export const translations = {
         'option.newlinesToSlash': '改行 → " / " に変換',
         'option.newlinesToSpace': '改行 → 半角スペースに変換',
         'option.newlinesToLiteralN': '改行 → \\n という文字列に変換',
+        'option.removeNewlines': '改行を削除',
         'option.base64Encode': 'Base64エンコード',
         'option.base64Decode': 'Base64デコード',
         'option.urlEncode': 'URLエンコード',
@@ -224,6 +228,7 @@ export const translations = {
         'tile.codeBlockMarkdown': 'Markdown',
         'tile.codeBlockJs': 'JavaScript',
         'tile.codeBlockPython': 'Python',
+        'tile.codeBlockJson': 'JSON',
         'tile.codeBlockPlaintext': 'Plaintext',
         'tile.codeBlockGeneric': 'Generic',
 
@@ -244,6 +249,7 @@ export const translations = {
         'tile.newlinesToSlash': 'Newline → Slash',
         'tile.newlinesToSpace': 'Newline → Space',
         'tile.newlinesToLiteralN': 'Newline → \\n String',
+        'tile.removeNewlines': 'Remove Newlines',
 
         // Tiles - Encode
         'tile.base64Encode': 'Base64 Encode',
@@ -257,6 +263,7 @@ export const translations = {
         'option.codeBlockMarkdown': 'Code Block (markdown)',
         'option.codeBlockJs': 'Code Block (javascript)',
         'option.codeBlockPython': 'Code Block (python)',
+        'option.codeBlockJson': 'Code Block (json)',
         'option.codeBlockPlaintext': 'Code Block (plaintext)',
         'option.codeBlockGeneric': 'Code Block (generic)',
         'option.markdownGeminiFix': 'Markdown Fix (for Gemini)',
@@ -272,6 +279,7 @@ export const translations = {
         'option.newlinesToSlash': 'Newline → " / "',
         'option.newlinesToSpace': 'Newline → Space',
         'option.newlinesToLiteralN': 'Newline → "\\n" String',
+        'option.removeNewlines': 'Remove Newlines',
         'option.base64Encode': 'Base64 Encode',
         'option.base64Decode': 'Base64 Decode',
         'option.urlEncode': 'URL Encode',

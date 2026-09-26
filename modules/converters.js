@@ -44,12 +44,14 @@ export const converters = {
     tableFormatter: async (text, signal) => await AIService.formatTable(text, signal),
     codeBlockMarkdown: (text) => Utils.createCodeBlock('markdown', text),
     codeBlockPython:   (text) => Utils.createCodeBlock('python', text),
+    codeBlockJson:     (text) => Utils.createCodeBlock('json', text),
     codeBlockJs:       (text) => Utils.createCodeBlock('javascript', text),
     codeBlockPlaintext: (text) => Utils.createCodeBlock('plaintext', text),
     codeBlockGeneric:  (text) => Utils.createCodeBlock('', text),
     newlinesToSlash:   (text) => text.replace(/\n/g, ' / '),
     newlinesToSpace:   (text) => text.replace(/\n/g, ' '),
     newlinesToLiteralN: (text) => text.replace(/\r\n|\r|\n/g, '\\n'),
+    removeNewlines:    (text) => text.replace(/\r\n|\r|\n/g, ''),
     markdownGeminiFix: (text) => {
         return text
             .replace(/ /g, ' ')
